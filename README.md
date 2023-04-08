@@ -3,7 +3,7 @@
 ## Description
 Quantitative statistics &amp; analytics dash application for comparing investment strategies and assets. 
 
-It is built on top of @ranaroussi's quantstats library and provides an easy and interactive experience for investment analytics. 
+It is built on top of @ranaroussi's [quantstats](https://github.com/ranaroussi/quantstats) library and provides an easy and interactive experience for investment analytics. 
 
 ## Usage
 The current version is based on uploading an excel template of asset prices time series. I am planning on adding additional funcitonalities and modules in the future such as integrating yfinance.
