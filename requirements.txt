@@ -1,0 +1,9 @@
+pandas
+numpy
+quantstats
+yfinance
+dash
+dash_bootstrap_components
+plotly
+datetime
+
