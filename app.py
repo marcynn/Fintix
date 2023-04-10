@@ -15,13 +15,13 @@ app.layout = layout.layout
 #-------------------Callbacks-------------------
 
 # Download data sample
-@app.callback(Output("download-dataframe-xlsx", "data"),
-                Input("btn_xlsx", "n_clicks"),
+@app.callback(Output("download-dataframe-csv", "data"),
+                Input("btn_csv", "n_clicks"),
                 prevent_initial_call=True)
 def func(n_clicks):
     if n_clicks >=1:
-        df = pd.read_excel('Data/sample-data.xlsx')
-        return dcc.send_data_frame(df.to_excel, "sample-data.xlsx", index=False)
+        df = pd.read_csv('Data/sample-data.csv')
+        return dcc.send_data_frame(df.to_csv, "sample-data.csv", index=False)
 
 # Store uploaded data
 @app.callback(Output('output-datatable', 'children'),

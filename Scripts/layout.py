@@ -64,7 +64,7 @@ upload_file = dbc.Row([
                         
                         # Download data-sample button. 
 
-                        dbc.Button("Download Data Template", id="btn_xlsx", className='float-end', color='dark'),
+                        dbc.Button("Download Data Template", id="btn_csv", className='float-end', color='dark'),
 
                         dbc.Tooltip(
                             "Upload same template to explore or modify and upload your data. "
@@ -74,7 +74,7 @@ upload_file = dbc.Row([
                             target="btn_xlsx",
                             ),
 
-                        dcc.Download(id="download-dataframe-xlsx"),
+                        dcc.Download(id="download-dataframe-csv"),
 
                         html.Div(id='params')
 

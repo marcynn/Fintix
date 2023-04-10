@@ -331,9 +331,6 @@ def display_rolling(prices, main_asset, benchmark_asset, rolling_periods, rfr, p
     '''
     Creates the display of the rolling charts module.
     '''
-    
-    #alpha_fig, beta_fig = rollingModule.create_rolling_greeks(prices, main_asset, benchmark_asset, rolling_periods)
-
     display = dbc.Row([
 
                     dbc.Col([
