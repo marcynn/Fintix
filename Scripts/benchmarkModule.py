@@ -58,7 +58,7 @@ def create_correlation_heatmap(data):
     returns = qs.utils._prepare_returns(prices)
 
     corr = returns.corr()
-    mask = np.triu(np.ones_like(corr, dtype=bool)) # Remove top triange
+    mask = np.triu(np.ones_like(corr, dtype=bool)) # Remove top triangle
     df_mask = round(corr.mask(mask),2) 
 
     fig = ff.create_annotated_heatmap(z=df_mask.to_numpy(), 
@@ -145,12 +145,17 @@ def create_statistics_table(data, main_asset, benchmark_asset, periods_per_year,
     columns = [dict(id=i, name=i, type='numeric', format=percentage) if 'Alpha' in i else dict(id=i, name=i) for i in df.columns]
     dt = dash_table.DataTable(data, 
                             columns,
+                            fixed_columns={'headers':True, 'data':2}, 
                             style_as_list_view=True,
+                            style_table={'minWidth':'100%',
+                                        'minHeight':150},
                             style_data=style.style_data,
                             style_header=style.style_header,
-                            style_table={'overflowX': 'scroll'},
                             style_cell={
-                                'textAlign': 'center',},
+                                'textAlign': 'center',
+                                'minWidth': '180px', 
+                                'width': '180px',
+                                'padding':'5px'},
                             style_data_conditional=[{'if': {'filter_query': '{{{}}} is blank'.format(col),
                                                             'column_id': col},
                                                             'backgroundColor': f'{style.red}',

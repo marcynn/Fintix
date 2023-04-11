@@ -1,6 +1,7 @@
 from dash import dash, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 import pandas as pd
+from datetime import timedelta
 import  Scripts.layout as layout
 import Scripts.utils as utils
 
@@ -42,21 +43,36 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
 # Display parameters
 @app.callback(Output('params','children'),
             Output('submit-btn','color'),
-            [Input('submit-btn','n_clicks')])
-def display_params(n_clicks):
+            Output('stored-data', 'data'),
+            Output('asset-dpdn','disabled'),
+            [Input('submit-btn','n_clicks')],
+            [State('stored-data','data'),
+            State('asset-dpdn', 'value')])
+def display_params(n_clicks, data, assets):
     if n_clicks >= 1:
         params =  utils.create_params()
-        return params, 'success'
+        try:
+            data = utils.json_to_df(data)
+            data = data[assets]
+            data.reset_index(inplace=True)
+            print(data)
+        except:
+            pass
+        return params, 'success', data.to_dict('records'), True
 
 # Update date picker to relevant dates
 @app.callback(Output('start-date','date'),
             Output('end-date','date'),
+            Output('start-date','min_date_allowed'),
+            Output('start-date','max_date_allowed'),
+            Output('end-date','min_date_allowed'),
+            Output('end-date','max_date_allowed'),
             [Input('stored-data','data')])
 def update_date_picker(data):
     data = utils.json_to_df(data)
     min_date = data.index.min()
     max_date = data.index.max()
-    return min_date, max_date
+    return min_date, max_date, min_date, max_date-timedelta(7), min_date+timedelta(7), max_date
 
 # Update main asset and benchmark to relevant ones
 @app.callback(Output('main-asset','options'),

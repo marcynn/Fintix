@@ -36,7 +36,8 @@ header = dbc.Row([
 
 
 upload_file = dbc.Row([
-                    dbc.Col([
+                    dbc.Col(id='upload-data-col',
+                    children=[
                         dcc.Upload(
                             id='upload-data',
                             children=html.Div(['Drag and Drop or ',
@@ -53,31 +54,37 @@ upload_file = dbc.Row([
                                 'margin': '10px',
                             },
                             # Allow multiple files to be uploaded
-                            multiple=True
-                        ), 
-
-                        html.Div(id='output-datatable'),
+                            multiple=True),
+                        
+                        dbc.Spinner(
+                            children=[html.Div(id='output-datatable')], 
+                            size="lg", 
+                            color="primary", 
+                            type="border", 
+                            fullscreen=False),
 
                     ],xs=12, sm=12, md=12, lg=6, xl=6),
                     
                     dbc.Col([
                         
                         # Download data-sample button. 
-
                         dbc.Button("Download Data Template", id="btn_csv", className='float-end', color='dark'),
 
                         dbc.Tooltip(
                             "Upload same template to explore or modify and upload your data. "
-                            "Please use 'Date' as first column, followed by your choice of assets such as 'Asset1', 'Asset2', etc. "
-                            "Possible to upload .xlsx, .xls, and .csv files."
+                            "Please use .csv file with 'Date' as first column, followed by your choice of assets such as 'Asset1', 'Asset2', etc. "
                             ,
-                            target="btn_xlsx",
+                            target="btn_csv",
                             ),
 
                         dcc.Download(id="download-dataframe-csv"),
 
-                        html.Div(id='params')
-
+                        dbc.Spinner(children=[html.Div(id='params')], 
+                        size="lg", 
+                        color="primary", 
+                        type="border", 
+                        fullscreen=False),
+                    
                     ],xs=12, sm=12, md=12, lg=6, xl=6),
                 
                 ], className=style.dbc_row_style)
@@ -86,7 +93,10 @@ layout = dbc.Container([
     navbar,
     header,
     upload_file,
-
-    html.Div(id='body')
+    dbc.Spinner(children=[html.Div(id='body')], 
+                size="lg", 
+                color="primary", 
+                type="border", 
+                fullscreen=False),
     
 ], fluid=True)

@@ -1,3 +1,4 @@
+from multiprocessing.dummy.connection import families
 import pandas as pd
 from dash import dcc, html, dash_table
 import dash_bootstrap_components as dbc
@@ -77,6 +78,7 @@ def display_uploaded_file(contents, filename, date):
     Display table of an uploaded Excel file.
     '''
     df = parse_content(contents, filename)
+    assets = df.set_index('Date').columns.to_list()
 
     display = html.Div([
 
@@ -101,6 +103,18 @@ def display_uploaded_file(contents, filename, date):
                         ),
                         
                         dbc.Row([
+
+                            html.P('Filter for asset', className='m-1'),
+
+                            dbc.Col([
+                            
+                                dcc.Dropdown(id='asset-dpdn',
+                                options=[{'label':i, 'value':i} for i in assets],
+                                multi=True,
+                                value=assets
+                                ),
+                            ]),
+
                             dbc.Col([
 
                                 dbc.Button(id='submit-btn',
@@ -216,7 +230,7 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                     dcc.Tab(label='Benchmark', value='benchmark', style=style.tab_style, selected_style=style.tab_selected_style),
                                     dcc.Tab(label='Rolling', value='rolling', style=style.tab_style, selected_style=style.tab_selected_style),
                             ]),
-                        ], className='mt-3')
+                        ], className='mt-3'),
                 ])
 
     return display
