@@ -55,6 +55,12 @@ upload_file = dbc.Row([
                             },
                             # Allow multiple files to be uploaded
                             multiple=True),
+
+                            dbc.Tooltip(
+                                "Upload .csv file based on the data template. "
+                                "Format is 'Date' as first column, followed by your choice of assets such as 'Asset1', 'Asset2', etc. ",
+                                target="upload-data",
+                            ),
                         
                         dbc.Spinner(
                             children=[html.Div(id='output-datatable')], 
@@ -69,13 +75,6 @@ upload_file = dbc.Row([
                         
                         # Download data-sample button. 
                         dbc.Button("Download Data Template", id="btn_csv", className='float-end', color='dark'),
-
-                        dbc.Tooltip(
-                            "Upload same template to explore or modify and upload your data. "
-                            "Please use .csv file with 'Date' as first column, followed by your choice of assets such as 'Asset1', 'Asset2', etc. "
-                            ,
-                            target="btn_csv",
-                            ),
 
                         dcc.Download(id="download-dataframe-csv"),
 

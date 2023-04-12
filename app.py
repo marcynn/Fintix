@@ -1,3 +1,4 @@
+from json.tool import main
 from dash import dash, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 import pandas as pd
@@ -14,7 +15,6 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SIMPLEX],
 app.layout = layout.layout
 
 #-------------------Callbacks-------------------
-
 # Download data sample
 @app.callback(Output("download-dataframe-csv", "data"),
                 Input("btn_csv", "n_clicks"),
@@ -37,28 +37,16 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
         children = [
             utils.display_uploaded_file(c, n, d) for c, n, d in
             zip(list_of_contents, list_of_names, list_of_dates)]
-        
         return children
 
 # Display parameters
 @app.callback(Output('params','children'),
             Output('submit-btn','color'),
-            Output('stored-data', 'data'),
-            Output('asset-dpdn','disabled'),
-            [Input('submit-btn','n_clicks')],
-            [State('stored-data','data'),
-            State('asset-dpdn', 'value')])
-def display_params(n_clicks, data, assets):
+            [Input('submit-btn','n_clicks')])
+def display_params(n_clicks):
     if n_clicks >= 1:
         params =  utils.create_params()
-        try:
-            data = utils.json_to_df(data)
-            data = data[assets]
-            data.reset_index(inplace=True)
-            print(data)
-        except:
-            pass
-        return params, 'success', data.to_dict('records'), True
+        return params, 'success'
 
 # Update date picker to relevant dates
 @app.callback(Output('start-date','date'),
@@ -74,50 +62,65 @@ def update_date_picker(data):
     max_date = data.index.max()
     return min_date, max_date, min_date, max_date-timedelta(7), min_date+timedelta(7), max_date
 
-# Update main asset and benchmark to relevant ones
+# Update assets filter dropdown
+@app.callback(Output('assets-dpdn','options'),
+            Output('assets-dpdn','value'),
+            [Input('stored-data','data')])
+def update_assets_dropdowns(data):
+
+    data = utils.json_to_df(data)
+    options = [{'label':i, 'value':i} for i in data.columns]
+    return options, data.columns
+
+# main asset and benchmark dropdowns based on filtered asset
 @app.callback(Output('main-asset','options'),
             Output('benchmark-asset','options'),
             Output('main-asset','value'),
             Output('benchmark-asset','value'),
-            [Input('stored-data','data')])
-def update_dropdowns(data):
-
-    data = utils.json_to_df(data)
-
+            [Input('assets-dpdn','value')])
+def update_dropdowns(filtered_assets):
     try:
-        main_asset = data.columns[0]
+        main_asset = filtered_assets[0]
     except:
         main_asset = ''
     try:
-        benchmark_asset = data.columns[1]
+        benchmark_asset = filtered_assets[1]
     except:
         benchmark_asset = ''
 
-    options = [{'label':i, 'value':i} for i in data.columns]
-
+    options = [{'label':i, 'value':i} for i in filtered_assets]
     return options, options, main_asset, benchmark_asset
 
 # Update body
 @app.callback(Output('body','children'),
-            [Input('stored-data','data'),
-            Input('start-date','date'),
-            Input('end-date','date'),
-            Input('initial-amount','value'),
-            Input('rfr','value'),
-            Input('periods-per-year','value'),
-            Input('rolling-periods','value'),
+            [Input('apply-changes-btn', 'n_clicks'),
             Input('menu-tabs','value'),
-            Input('main-asset','value'),
-            Input('benchmark-asset','value')
+            Input('stored-data','data'),
+            Input('assets-dpdn', 'value')],
+            [State('start-date','date'),
+            State('end-date','date'),
+            State('initial-amount','value'),
+            State('rfr','value'),
+            State('periods-per-year','value'),
+            State('rolling-periods','value'),
+            State('main-asset','value'),
+            State('benchmark-asset','value'),
             ])
-def display_body(data, start_date, end_date, initial_amount, rfr, periods_per_year, rolling_periods, tab, main_asset, benchmark_asset):
+def display_body(n_clicks, tab, data, all_assets, start_date, end_date, initial_amount, rfr, periods_per_year, rolling_periods, main_asset, benchmark_asset):
     data = utils.json_to_df(data)
     try:
         data = data.loc[start_date:end_date] # Filter for start and end dates from date picker
     except:
+        print(f"Couldn't filter for date.")
         pass
+    try:
+        data = data[all_assets] # Filter for dropdown selected assets
+    except:
+        print(f"Couldn't filter for assets.")
+        pass
+
     if tab == 'compare':
-        return utils.display_compare(data, initial_amount, rfr, periods_per_year, rolling_periods)
+        return utils.display_compare(data, initial_amount, rfr, periods_per_year)
     elif tab == 'returns':
         return utils.display_returns(data, main_asset)
     elif tab == 'benchmark':
@@ -126,4 +129,4 @@ def display_body(data, start_date, end_date, initial_amount, rfr, periods_per_ye
         return utils.display_rolling(data, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year)
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)

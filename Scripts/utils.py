@@ -104,17 +104,6 @@ def display_uploaded_file(contents, filename, date):
                         
                         dbc.Row([
 
-                            html.P('Filter for asset', className='m-1'),
-
-                            dbc.Col([
-                            
-                                dcc.Dropdown(id='asset-dpdn',
-                                options=[{'label':i, 'value':i} for i in assets],
-                                multi=True,
-                                value=assets
-                                ),
-                            ]),
-
                             dbc.Col([
 
                                 dbc.Button(id='submit-btn',
@@ -140,6 +129,12 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                         html.H3('Adjust Parameters', className='m-4'),
 
                         dbc.Row([
+
+                                dbc.Row([
+                                    html.P(children='Filter for Asset', className=style.params_p_style), 
+                                    dcc.Dropdown(id='assets-dpdn',
+                                                    multi=True)
+                                        ], className='mb-3'),
                             
                                 dbc.Col([
                                     html.P(children='Initial amount', className=style.params_p_style), 
@@ -217,9 +212,22 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                 
                                     dcc.Dropdown(id='benchmark-asset', 
                                             value = ''
-                                            )
+                                            ),
+                            ],xs=12, sm=12, md=12, lg=12, xl=6),
 
-                                    ],xs=12, sm=12, md=12, lg=12, xl=6),
+
+                            dbc.Row([
+
+                                dbc.Col([
+
+                                    dbc.Button(id='apply-changes-btn',
+                                        children='Apply Changes',
+                                        n_clicks=0,
+                                        className='mt-3 mb-3',
+                                        color='dark'),
+
+                                ],xs=12, sm=12, md=12, lg=12, xl=6)
+                            ]),
 
                         ], className=style.dbc_row_style),
 
@@ -235,7 +243,7 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
 
     return display
 
-def display_compare(data, initial_amount=initial_amount, rfr=rfr, periods_per_year=periods_per_year, rolling_periods=rolling_periods):
+def display_compare(data, initial_amount=initial_amount, rfr=rfr, periods_per_year=periods_per_year):
     '''
     Creates the display of compare module that includes index performance, drawdown, and metrics table.
     '''
@@ -243,13 +251,13 @@ def display_compare(data, initial_amount=initial_amount, rfr=rfr, periods_per_ye
     prices = data.copy()
     assets = prices.columns.to_list()
     returns = qs.utils._prepare_returns(prices)
-    # Create index index evolution
+    # Create index evolution
     index = qs.utils.to_prices(returns, initial_amount)
     drawdown = qs.stats.to_drawdown_series(returns)
 
     # Index evolution
     index_traces = [go.Scatter(x=index.index, y=index[a], mode='lines', name=a) for a in assets]
-    index_layout = style.scatter_charts_layout(title=f'Theoretical Performance of {style.accounting_format(initial_amount)}')
+    index_layout = style.scatter_charts_layout(title=f'Performance of {style.accounting_format(initial_amount)}')
     index_fig = go.Figure(index_traces, index_layout)
     
     # Drawdown
@@ -290,7 +298,12 @@ def display_returns(prices, main_asset, round_to=2):
     
                     dbc.Row([
                                 
-                        html.H3(f'Monthly Returns - {main_asset}', className='p-4'),
+                        html.H3(id='monthly-rets-p', children=f'Monthly Returns - {main_asset}', className='p-4'),
+
+                        dbc.Tooltip(
+                            "Filter for asset or change main/benchmark asset dropdowns and apply changes to update visuals.",
+                            target="monthly-rets-p",
+                            ),
 
                         returnsModule.create_monthly_returns_table(prices, main_asset, round_to)
 
@@ -318,7 +331,12 @@ def display_benchmark(prices, main_asset, benchmark_asset, periods_per_year=peri
 
                 dbc.Row([
 
-                    html.H3(f'Statistics {main_asset} vs {benchmark_asset}', className='p-4'),
+                    html.H3(id='statistics-p', children=f'Statistics {main_asset} vs {benchmark_asset}', className='p-4'),
+
+                    dbc.Tooltip(
+                            "Filter for asset or change main/benchmark asset dropdowns and apply changes to update visuals.",
+                            target="statistics-p",
+                            ),
 
                     benchmarkModule.create_statistics_table(prices, main_asset, benchmark_asset, periods_per_year)
                     ], className='mb-2'),
