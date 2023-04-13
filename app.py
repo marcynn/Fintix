@@ -37,13 +37,16 @@ def toggle_modal(n1, n2, is_open):
 
 # Download Yahoo data
 @app.callback(Output("yf-download-csv", "data"),
-                [Input("yf-download-btn", "n_clicks"),
-                Input('yf-asset-dpdn', 'value'),
-                Input('yf-periods-dpdn','value')],
+                [Input("yf-download-btn", "n_clicks")],
+                [State('yf-asset-dpdn', 'value'),
+                State('yf-periods-dpdn','value')],
                 prevent_initial_call=True)
 def download_yahoo_data(n_clicks, assets, period):
     if n_clicks >=1:
         df = yf.download(assets, period=period)['Adj Close']
+        if isinstance(df, pd.Series):
+            df = pd.DataFrame(df)
+            df.columns = [assets]
         return dcc.send_data_frame(df.to_csv, "yf-data.csv", index=True)
     
 # Store uploaded data
