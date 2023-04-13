@@ -1,9 +1,9 @@
 pandas
 numpy
 quantstats
-yfinance
+yfinance # download sample and ticker universe data
 dash
 dash_bootstrap_components
 plotly
 datetime
-
+pyfinviz # to get ticker universe

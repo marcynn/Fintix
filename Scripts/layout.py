@@ -1,6 +1,7 @@
 import dash_bootstrap_components as dbc
 from dash import html, dcc
 import Scripts.style as style
+import Scripts.tickerUniverse as tickUn
 
 # Navbar
 navbar = dbc.NavbarSimple(id='nav-bar',
@@ -33,7 +34,6 @@ header = dbc.Row([
                         )
                     ], xs=12, sm=12, md=12, lg=12, xl=12),
         ], className=style.dbc_row_style)
-
 
 upload_file = dbc.Row([
                     dbc.Col(id='upload-data-col',
@@ -73,18 +73,47 @@ upload_file = dbc.Row([
                     
                     dbc.Col([
                         
-                        # Download data-sample button. 
-                        dbc.Button("Download Data Template", id="btn_csv", className='float-end', color='dark'),
+                        dbc.Row([
 
-                        dcc.Download(id="download-dataframe-csv"),
+                            dbc.Col([
 
+                                # Download data-sample button 
+                                dbc.Button("Download CSV Template", id="btn_csv", className='m-2', color='dark', n_clicks=0),
+                                dcc.Download(id="download-dataframe-csv"),
+            
+                                # Download data from yfinance modal
+                                dbc.Button("Download Yahoo Data", id="open-modal-btn", className='m-2', color='dark', n_clicks=0),
+                                dbc.Modal(
+                                    [
+                                        dbc.ModalHeader(dbc.ModalTitle("Download asset prices from Yahoo Finance")),
+                                        dbc.ModalBody(children=[
+                                                                html.P('Assets'),
+                                                                dcc.Dropdown(id='yf-asset-dpdn', options=tickUn.ticker_labels, value='TSLA', multi=True, className='m-2'), 
+                                                                html.P('Date Period'),
+                                                                dcc.Dropdown(id='yf-periods-dpdn', options=['5d','1mo','3mo','6mo','1y','2y','5y','10y','ytd','max'], value='ytd', className='m-2'),
+                                                                ]),
+                                        dbc.ModalFooter(
+                                            html.Div([
+                                                dbc.Button('Download csv', id='yf-download-btn', color="dark", n_clicks=0),
+                                                dcc.Download(id="yf-download-csv"),
+                                                dbc.Button("Close", id="close-modal-btn", className="ms-2", color="dark", n_clicks=0)
+                                            ])
+                                        ),
+                                    ],
+                                    id="modal",
+                                    is_open=False,
+                                    )
+                            ], width={'offset':6})
+                        ]),
+                        
+                        # Parameters spinner + div
                         dbc.Spinner(children=[html.Div(id='params')], 
                         size="lg", 
                         color="primary", 
                         type="border", 
                         fullscreen=False),
                     
-                    ],xs=12, sm=12, md=12, lg=6, xl=6),
+                        ],xs=12, sm=12, md=12, lg=6, xl=6),
                 
                 ], className=style.dbc_row_style)
 

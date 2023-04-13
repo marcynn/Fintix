@@ -297,13 +297,8 @@ def display_returns(prices, main_asset, round_to=2):
     display = dbc.Row([
     
                     dbc.Row([
-                                
-                        html.H3(id='monthly-rets-p', children=f'Monthly Returns - {main_asset}', className='p-4'),
 
-                        dbc.Tooltip(
-                            "Filter for asset or change main/benchmark asset dropdowns and apply changes to update visuals.",
-                            target="monthly-rets-p",
-                            ),
+                        html.H3(f'Monthly Returns - {main_asset}', className='p-4'),
 
                         returnsModule.create_monthly_returns_table(prices, main_asset, round_to)
 
@@ -331,12 +326,7 @@ def display_benchmark(prices, main_asset, benchmark_asset, periods_per_year=peri
 
                 dbc.Row([
 
-                    html.H3(id='statistics-p', children=f'Statistics {main_asset} vs {benchmark_asset}', className='p-4'),
-
-                    dbc.Tooltip(
-                            "Filter for asset or change main/benchmark asset dropdowns and apply changes to update visuals.",
-                            target="statistics-p",
-                            ),
+                    html.H3(f'Statistics {main_asset} vs {benchmark_asset}', className='p-4'),
 
                     benchmarkModule.create_statistics_table(prices, main_asset, benchmark_asset, periods_per_year)
                     ], className='mb-2'),

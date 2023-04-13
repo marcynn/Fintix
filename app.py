@@ -2,6 +2,7 @@ from json.tool import main
 from dash import dash, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 import pandas as pd
+import yfinance as yf
 from datetime import timedelta
 import  Scripts.layout as layout
 import Scripts.utils as utils
@@ -24,6 +25,27 @@ def func(n_clicks):
         df = pd.read_csv('Data/sample-data.csv')
         return dcc.send_data_frame(df.to_csv, "sample-data.csv", index=False)
 
+# Open/Close Yahoo Modal
+@app.callback(
+    Output("modal", "is_open"),
+    [Input("open-modal-btn", "n_clicks"), Input("close-modal-btn", "n_clicks")],
+    [State("modal", "is_open")])
+def toggle_modal(n1, n2, is_open):
+    if n1 or n2:
+        return not is_open
+    return is_open
+
+# Download Yahoo data
+@app.callback(Output("yf-download-csv", "data"),
+                [Input("yf-download-btn", "n_clicks"),
+                Input('yf-asset-dpdn', 'value'),
+                Input('yf-periods-dpdn','value')],
+                prevent_initial_call=True)
+def download_yahoo_data(n_clicks, assets, period):
+    if n_clicks >=1:
+        df = yf.download(assets, period=period)['Adj Close']
+        return dcc.send_data_frame(df.to_csv, "yf-data.csv", index=True)
+    
 # Store uploaded data
 @app.callback(Output('output-datatable', 'children'),
             Input('upload-data', 'contents'),
@@ -31,7 +53,7 @@ def func(n_clicks):
             State('upload-data', 'last_modified'))
 def update_output(list_of_contents, list_of_names, list_of_dates):
     '''
-    Updates output of uploaded Excel file and stores data.
+    Updates the output of uploaded Excel file and stores data.
     '''
     if list_of_contents is not None:
         children = [
@@ -66,19 +88,18 @@ def update_date_picker(data):
 @app.callback(Output('assets-dpdn','options'),
             Output('assets-dpdn','value'),
             [Input('stored-data','data')])
-def update_assets_dropdowns(data):
-
+def update_filter_dropdown(data):
     data = utils.json_to_df(data)
     options = [{'label':i, 'value':i} for i in data.columns]
     return options, data.columns
 
-# main asset and benchmark dropdowns based on filtered asset
+# Update main asset and benchmark dropdowns based on filtered asset
 @app.callback(Output('main-asset','options'),
             Output('benchmark-asset','options'),
             Output('main-asset','value'),
             Output('benchmark-asset','value'),
             [Input('assets-dpdn','value')])
-def update_dropdowns(filtered_assets):
+def update_main_bench_dropdowns(filtered_assets):
     try:
         main_asset = filtered_assets[0]
     except:
@@ -95,9 +116,9 @@ def update_dropdowns(filtered_assets):
 @app.callback(Output('body','children'),
             [Input('apply-changes-btn', 'n_clicks'),
             Input('menu-tabs','value'),
-            Input('stored-data','data'),
-            Input('assets-dpdn', 'value')],
-            [State('start-date','date'),
+            Input('stored-data','data')],
+            [State('assets-dpdn', 'value'),
+            State('start-date','date'),
             State('end-date','date'),
             State('initial-amount','value'),
             State('rfr','value'),
@@ -108,16 +129,16 @@ def update_dropdowns(filtered_assets):
             ])
 def display_body(n_clicks, tab, data, all_assets, start_date, end_date, initial_amount, rfr, periods_per_year, rolling_periods, main_asset, benchmark_asset):
     data = utils.json_to_df(data)
-    try:
-        data = data.loc[start_date:end_date] # Filter for start and end dates from date picker
-    except:
-        print(f"Couldn't filter for date.")
-        pass
-    try:
-        data = data[all_assets] # Filter for dropdown selected assets
-    except:
-        print(f"Couldn't filter for assets.")
-        pass
+    
+    if n_clicks >= 1: # This means that we want to initialize the app with all assets at first. 
+        try:
+            data = data.loc[start_date:end_date] # Filter for start and end dates from date picker
+        except:
+            print(f"Couldn't filter for date.")
+        try:
+            data = data[all_assets] # Filter for dropdown selected assets
+        except:
+            print(f"Couldn't filter for assets.")
 
     if tab == 'compare':
         return utils.display_compare(data, initial_amount, rfr, periods_per_year)
@@ -129,4 +150,4 @@ def display_body(n_clicks, tab, data, all_assets, start_date, end_date, initial_
         return utils.display_rolling(data, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year)
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
