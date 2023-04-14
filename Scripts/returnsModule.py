@@ -59,7 +59,7 @@ def create_monthly_returns_table(prices, main_asset, round_to=2):
                                                     'color':style.green}
                                                     for col in grouped_rets.columns] +
                                                     [{'if': {'column_id': 'Year'},
-                                                    'color':'black'}])
+                                                    'color':'white'}])
                                                     
     return dt
 

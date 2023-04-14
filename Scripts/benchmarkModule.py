@@ -1,3 +1,4 @@
+from turtle import bgcolor
 import quantstats as qs
 import numpy as np
 import pandas as pd
@@ -48,8 +49,9 @@ def create_distribution_plot(data, main_asset, benchmark_asset):
                     font=dict(size=15),
                     hoverlabel=dict(font_size=15),
                     template=style.chart_templates,
+                    paper_bgcolor=style.main_theme_color, 
+                    plot_bgcolor=style.main_theme_color,
                     legend=dict(y=-0.2))
-
     return fig
 
 def create_correlation_heatmap(data):
@@ -84,6 +86,8 @@ def create_correlation_heatmap(data):
                         yaxis_zeroline=False,
                         yaxis_autorange='reversed',
                         template=style.chart_templates,
+                        paper_bgcolor=style.main_theme_color, 
+                        plot_bgcolor=style.main_theme_color,
                         legend=dict(y=-0.2))
 
     # Get rid of NaN values
@@ -145,10 +149,10 @@ def create_statistics_table(data, main_asset, benchmark_asset, periods_per_year,
     columns = [dict(id=i, name=i, type='numeric', format=percentage) if 'Alpha' in i else dict(id=i, name=i) for i in df.columns]
     dt = dash_table.DataTable(data, 
                             columns,
-                            fixed_columns={'headers':True, 'data':2}, 
+                            fixed_columns={'headers':True, 'data':1}, 
                             style_as_list_view=True,
                             style_table={'minWidth':'100%',
-                                        'minHeight':150},
+                                        'minHeight':100},
                             style_data=style.style_data,
                             style_header=style.style_header,
                             style_cell={
@@ -160,5 +164,4 @@ def create_statistics_table(data, main_asset, benchmark_asset, periods_per_year,
                                                             'column_id': col},
                                                             'backgroundColor': f'{style.red}',
                                                             'color': 'white'} for col in df.columns])
-
     return dt

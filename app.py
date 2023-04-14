@@ -1,4 +1,3 @@
-from json.tool import main
 from dash import dash, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 import pandas as pd
@@ -8,7 +7,7 @@ import  Scripts.layout as layout
 import Scripts.utils as utils
 
 # Create Dash App
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SIMPLEX], 
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY], 
                     meta_tags=[{'name': 'viewport',
                             'content': 'width=device-width, initial-scale=1.0'}])
 
@@ -135,11 +134,11 @@ def display_body(n_clicks, tab, data, all_assets, start_date, end_date, initial_
     
     if n_clicks >= 1: # This means that we want to initialize the app with all assets at first. 
         try:
-            data = data.loc[start_date:end_date] # Filter for start and end dates from date picker
+            data = data.loc[start_date:end_date] # Filter for start and end dates from date picker.
         except:
             print(f"Couldn't filter for date.")
         try:
-            data = data[all_assets] # Filter for dropdown selected assets
+            data = data[all_assets] # Filter for dropdown selected assets.
         except:
             print(f"Couldn't filter for assets.")
 
@@ -153,4 +152,4 @@ def display_body(n_clicks, tab, data, all_assets, start_date, end_date, initial_
         return utils.display_rolling(data, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year)
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)

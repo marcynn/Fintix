@@ -1,4 +1,3 @@
-from multiprocessing.dummy.connection import families
 import pandas as pd
 from dash import dcc, html, dash_table
 import dash_bootstrap_components as dbc
@@ -133,7 +132,8 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                 dbc.Row([
                                     html.P(children='Filter for Asset', className=style.params_p_style), 
                                     dcc.Dropdown(id='assets-dpdn',
-                                                    multi=True)
+                                                    multi=True,
+                                                    className='text-primary')
                                         ], className='mb-3'),
                             
                                 dbc.Col([
@@ -205,14 +205,14 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                     html.P(children='Main', className=style.params_p_style),  
                                 
                                     dcc.Dropdown(id='main-asset', 
-                                            value = ''
-                                            ),
+                                            value = '',
+                                            className='text-primary'),
 
                                     html.P(children='Benchmark', className=style.params_p_style),  
                                 
                                     dcc.Dropdown(id='benchmark-asset', 
-                                            value = ''
-                                            ),
+                                            value = '',
+                                            className='text-primary'),
                             ],xs=12, sm=12, md=12, lg=12, xl=6),
 
 
@@ -229,7 +229,7 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                 ],xs=12, sm=12, md=12, lg=12, xl=6)
                             ]),
 
-                        ], className=style.dbc_row_style),
+                        ], className=style.dbc_row_style + ' bg-primary'),
 
                         dbc.Row([
                                 dcc.Tabs(id='menu-tabs', value='compare', children=[
@@ -266,25 +266,19 @@ def display_compare(data, initial_amount=initial_amount, rfr=rfr, periods_per_ye
     drawdown_fig = go.Figure(drawdown_traces, drawdown_layout)
 
     display = dbc.Row([
+
                     dbc.Row([
-
-                        html.H3('Metrics', className='p-4'),
-
-                        dbc.Col([
-                            metricsTable.create_metrics_table(prices, periods_per_year, rfr)
-                        ])
+                        html.H3(f'Metrics', className='p-4'),
+                        metricsTable.create_metrics_table(prices, periods_per_year, rfr)
                     ]),
+                    
+                    dbc.Col([
+                        dcc.Graph(figure=index_fig)
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border mt-4'),
 
-                    dbc.Row([
-                        dbc.Col([
-                            dcc.Graph(figure=index_fig)
-                        ],  xs=12, sm=12, md=12, lg=6, xl=6, className='border-end'),
-
-                        dbc.Col([
-                            dcc.Graph(figure=drawdown_fig)
-                        ],  xs=12, sm=12, md=12, lg=6, xl=6, className='border-end'),
-                        
-                    ], className='mt-2'),
+                    dbc.Col([
+                        dcc.Graph(figure=drawdown_fig)
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border mt-4'),
 
     ], className=style.dbc_row_style)
 
@@ -295,24 +289,19 @@ def display_returns(prices, main_asset, round_to=2):
     Creates the display of returns module that includes monthly, eoy, and time series of returns.
     '''
     display = dbc.Row([
-    
-                    dbc.Row([
 
+                    dbc.Row([
                         html.H3(f'Monthly Returns - {main_asset}', className='p-4'),
-
                         returnsModule.create_monthly_returns_table(prices, main_asset, round_to)
+                    ]),
+                    
+                    dbc.Col([
+                        dcc.Graph(figure=returnsModule.create_eoyReturns_bar(prices))
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border mt-4'),
 
-                        ]),
-
-                    dbc.Row([
-                        dbc.Col([
-                            dcc.Graph(figure=returnsModule.create_eoyReturns_bar(prices))
-                        ],xs=12, sm=12, md=12, lg=8, xl=8, className='border-end'),
-
-                        dbc.Col([
-                            dcc.Graph(figure=returnsModule.create_daily_returns_plot(prices, main_asset))
-                        ],xs=12, sm=12, md=12, lg=4, xl=4, className='border-end')
-                    ], className='mt-3')
+                    dbc.Col([
+                        dcc.Graph(figure=returnsModule.create_daily_returns_plot(prices, main_asset))
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border mt-4'),
 
             ],className=style.dbc_row_style)
                             
@@ -329,23 +318,21 @@ def display_benchmark(prices, main_asset, benchmark_asset, periods_per_year=peri
                     html.H3(f'Statistics {main_asset} vs {benchmark_asset}', className='p-4'),
 
                     benchmarkModule.create_statistics_table(prices, main_asset, benchmark_asset, periods_per_year)
-                    ], className='mb-2'),
+                    ]),
 
-                dbc.Row([
-                    dbc.Col([
-                        dcc.Graph(figure=benchmarkModule.create_scatter_plot(prices, main_asset, benchmark_asset))
-                    ], xs=12, sm=12, md=12, lg=4, xl=4, className='border-end'),
+                dbc.Col([
+                    dcc.Graph(figure=benchmarkModule.create_scatter_plot(prices, main_asset, benchmark_asset))
+                ], xs=12, sm=12, md=12, lg=12, xl=12, className='border mt-4'),
 
-                    dbc.Col([
-                        dcc.Graph(figure=benchmarkModule.create_distribution_plot(prices, main_asset, benchmark_asset))
-                    ], xs=12, sm=12, md=12, lg=4, xl=4, className='border-end'),
+                dbc.Col([
+                    dcc.Graph(figure=benchmarkModule.create_distribution_plot(prices, main_asset, benchmark_asset))
+                ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4'),
 
-                    dbc.Col([
-                        dcc.Graph(figure=benchmarkModule.create_correlation_heatmap(prices))
-                    ], xs=12, sm=12, md=12, lg=4, xl=4, className='border-end')
-                ],className='mt-2')
-
-        ], className=style.dbc_row_style)
+                dbc.Col([
+                    dcc.Graph(figure=benchmarkModule.create_correlation_heatmap(prices))
+                ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4')
+            
+            ], className=style.dbc_row_style)
 
     return display
 
@@ -357,23 +344,23 @@ def display_rolling(prices, main_asset, benchmark_asset, rolling_periods, rfr, p
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Alpha"))
-                    ], xs=12, sm=12, md=12, lg=4, xl=4, className='border-end mt-2'),
+                    ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4'),
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Beta"))
-                    ], xs=12, sm=12, md=12, lg=4, xl=4, className='border-end mt-2'),
+                    ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4'),
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Sharpe"))
-                    ], xs=12, sm=12, md=12, lg=4, xl=4, className='border-end mt-2'),
+                    ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4'),
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Sortino"))
-                    ], xs=12, sm=12, md=12, lg=4, xl=4, className='border-end mt-2'),
+                    ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4'),
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Volatility"))
-                    ], xs=12, sm=12, md=12, lg=4, xl=4, className='border-end mt-2')
+                    ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4')
 
         ], className=style.dbc_row_style)
     

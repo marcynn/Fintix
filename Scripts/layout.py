@@ -5,22 +5,22 @@ import Scripts.tickerUniverse as tickUn
 
 # Navbar
 navbar = dbc.NavbarSimple(id='nav-bar',
-    children=[
-        dbc.DropdownMenu(id='nav-dpdn',
-            children=[
-                dbc.DropdownMenuItem("Portfolio Optimization", header=False, className=None),
-                dbc.DropdownMenuItem("Macro Dashboard", href="#", className=None),
-            ],
-            nav=True,
-            in_navbar=True,
-            label="Coming Soon",
-            class_name = None
-        ),
-        dbc.NavItem(dbc.NavLink("About", href="#"), id='nav-item'),
-    ],
+    # children=[
+    #     dbc.DropdownMenu(id='nav-dpdn',
+    #         children=[
+    #             dbc.DropdownMenuItem("Portfolio Optimization", header=False, className=None),
+    #             dbc.DropdownMenuItem("Macro Dashboard", href="#", className=None),
+    #         ],
+    #         nav=True,
+    #         in_navbar=True,
+    #         label="Coming Soon",
+    #         class_name = None
+    #     ),
+    #     dbc.NavItem(dbc.NavLink("About", href="#"), id='nav-item'),
+    # ],
     brand="Fintix",
     brand_href="#",
-    color="dark",
+    color="primary",
     dark=True,
     brand_style= {'fontSize':30},
     fluid=True                  
@@ -78,23 +78,23 @@ upload_file = dbc.Row([
                             dbc.Col([
 
                                 # Download data-sample button 
-                                dbc.Button("Download CSV Template", id="btn_csv", className='m-2', color='dark', n_clicks=0),
+                                dbc.Button("Download CSV Template", id="btn_csv", className='m-2', color='primary', n_clicks=0),
                                 dcc.Download(id="download-dataframe-csv"),
             
                                 # Download data from yfinance modal
-                                dbc.Button("Download Yahoo Data", id="open-modal-btn", className='m-2', color='dark', n_clicks=0),
+                                dbc.Button("Download Yahoo Data", id="open-modal-btn", className='m-2', color='primary', n_clicks=0),
                                 dbc.Modal(
                                     [
                                         dbc.ModalHeader(dbc.ModalTitle("Download asset prices from Yahoo Finance")),
                                         dbc.ModalBody(children=[
                                                                 html.P('Assets'),
-                                                                dcc.Dropdown(id='yf-asset-dpdn', options=tickUn.ticker_labels, value='TSLA', multi=True, className='m-2'), 
+                                                                dcc.Dropdown(id='yf-asset-dpdn', options=tickUn.ticker_labels, value='TSLA', multi=True, className='m-2 text-primary'), 
                                                                 html.P('Date Period'),
-                                                                dcc.Dropdown(id='yf-periods-dpdn', options=['5d','1mo','3mo','6mo','1y','2y','5y','10y','ytd','max'], value='ytd', className='m-2'),
+                                                                dcc.Dropdown(id='yf-periods-dpdn', options=['5d','1mo','3mo','6mo','1y','2y','5y','10y','ytd','max'], value='ytd', className='m-2 text-primary'),
                                                                 ]),
                                         dbc.ModalFooter(
                                             html.Div([
-                                                dbc.Button('Download csv', id='yf-download-btn', color="dark", n_clicks=0),
+                                                dbc.Button('Download csv', id='yf-download-btn', color="primary", n_clicks=0),
                                                 dcc.Download(id="yf-download-csv"),
                                                 dbc.Button("Close", id="close-modal-btn", className="ms-2", color="dark", n_clicks=0)
                                             ])
