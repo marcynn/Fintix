@@ -49,8 +49,8 @@ def create_distribution_plot(data, main_asset, benchmark_asset):
                     font=dict(size=15),
                     hoverlabel=dict(font_size=15),
                     template=style.chart_templates,
-                    paper_bgcolor=style.main_theme_color, 
-                    plot_bgcolor=style.main_theme_color,
+                    paper_bgcolor=style.secondary_theme_color, 
+                    plot_bgcolor=style.secondary_theme_color,
                     legend=dict(y=-0.2))
     return fig
 
@@ -86,8 +86,8 @@ def create_correlation_heatmap(data):
                         yaxis_zeroline=False,
                         yaxis_autorange='reversed',
                         template=style.chart_templates,
-                        paper_bgcolor=style.main_theme_color, 
-                        plot_bgcolor=style.main_theme_color,
+                        paper_bgcolor=style.secondary_theme_color, 
+                        plot_bgcolor=style.secondary_theme_color,
                         legend=dict(y=-0.2))
 
     # Get rid of NaN values
