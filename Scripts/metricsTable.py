@@ -56,6 +56,8 @@ def create_metrics_table(data, periods_per_year, rfr, round_to=2):
             # Stats
             ('Win Rate', qs.stats.win_rate(returns, aggregate=None, compounded=False, prepare_returns=False)),
             ('Loss Rate', 1 - qs.stats.win_rate(returns, aggregate=None, compounded=False, prepare_returns=False)),
+            ('Payoff Ratio', qs.stats.payoff_ratio(returns, prepare_returns=False)),
+            ('Tail Ratio 95%', qs.stats.tail_ratio(returns, cutoff=0.95, prepare_returns=True)),
             ('Skew', qs.stats.skew(returns, prepare_returns=False)),
             ('Kurtosis', qs.stats.kurtosis(returns, prepare_returns=False)),
             ('Kelly Criterion', qs.stats.kelly_criterion(returns, prepare_returns=False)),
@@ -68,13 +70,12 @@ def create_metrics_table(data, periods_per_year, rfr, round_to=2):
             ('VaR 95%', qs.stats.value_at_risk(returns, sigma=1, confidence=0.95, prepare_returns=False)),
             ('CVaR 95%', qs.stats.cvar(returns, sigma=1, confidence=0.95, prepare_returns=True)),
 
-            # Ratios
-            ('Sharpe Ratio', qs.stats.sharpe(returns, rf=rfr, periods=periods_per_year, annualize=False)),
+            # Risk-adjusted Ratios
+            ('Sharpe Ratio', qs.stats.sharpe(returns, rf=rfr, periods=periods_per_year, annualize=True)),
             ('Sharpe Ratio P.A.', qs.stats.sharpe(returns, rf=rfr, periods=periods_per_year, annualize=True)),
-            ('Sortino Ratio', qs.stats.sortino(returns, rf=rfr, periods=periods_per_year, annualize=False)),
+            ('Sortino Ratio', qs.stats.sortino(returns, rf=rfr, periods=periods_per_year, annualize=True)),
             ('Sortino Ratio P.A.', qs.stats.sortino(returns, rf=rfr, periods=periods_per_year, annualize=True)),
-            ('Calmar Ratio', qs.stats.calmar(returns, prepare_returns=False)),
-            ('Tail Ratio 95%', qs.stats.tail_ratio(returns, cutoff=0.95, prepare_returns=False)),
+            ('Calmar Ratio', qs.stats.calmar(returns, prepare_returns=True)),
             
         ])
 
@@ -109,7 +110,9 @@ def create_metrics_table(data, periods_per_year, rfr, round_to=2):
 
         # Stats
         dict(id='Win Rate', name=['Stats','Win Rate'], type='numeric', format=FormatTemplate.percentage(round_to)), 
-        dict(id='Loss Rate', name=['','Loss Rate'], type='numeric', format=FormatTemplate.percentage(round_to)), 
+        dict(id='Loss Rate', name=['','Loss Rate'], type='numeric', format=FormatTemplate.percentage(round_to)),
+        dict(id='Payoff Ratio', name=['','Payoff Ratio'], type='numeric', format=Format(precision=round_to, scheme=Scheme.decimal)),
+        dict(id='Tail Ratio 95%', name=['','Tail Ratio 95%'], type='numeric', format=Format(precision=round_to, scheme=Scheme.decimal)),
         dict(id='Skew',name=['','Skew'], type='numeric', format=Format(precision=round_to, scheme=Scheme.decimal)),
         dict(id='Kurtosis',name=['','Kurtosis'], type='numeric', format=Format(precision=round_to, scheme=Scheme.decimal)),
         dict(id='Kelly Criterion', name=['','Kelly Criterion'], type='numeric', format=FormatTemplate.percentage(round_to)),
@@ -122,13 +125,12 @@ def create_metrics_table(data, periods_per_year, rfr, round_to=2):
         dict(id='VaR 95%', name=['','VaR 95%'], type='numeric', format=FormatTemplate.percentage(round_to)),
         dict(id='CVaR 95%', name=['','CVaR 95%'], type='numeric', format=FormatTemplate.percentage(round_to)),
         
-        # Ratios
-        dict(id='Sharpe Ratio', name=['Ratios', 'Sharpe Ratio'], type='numeric', format=Format(precision=round_to, scheme=Scheme.decimal)),
+        # Risk-adjusted Ratios
+        dict(id='Sharpe Ratio', name=['Risk-adjusted Ratios', 'Sharpe Ratio'], type='numeric', format=Format(precision=round_to, scheme=Scheme.decimal)),
         dict(id='Sharpe Ratio P.A.', name=['','Sharpe Ratio P.A.'], type='numeric', format=Format(precision=round_to, scheme=Scheme.decimal)),
         dict(id='Sortino Ratio', name=['','Sortino Ratio'], type='numeric', format=Format(precision=round_to, scheme=Scheme.decimal)),
         dict(id='Sortino Ratio P.A.', name=['','Sortino Ratio P.A.'], type='numeric', format=Format(precision=round_to, scheme=Scheme.decimal)),
         dict(id='Calmar Ratio', name=['','Calmar Ratio'], type='numeric', format=Format(precision=round_to, scheme=Scheme.decimal)),
-        dict(id='Tail Ratio 95%', name=['','Tail Ratio 95%'], type='numeric', format=Format(precision=round_to, scheme=Scheme.decimal)),
 
     ]
 
@@ -136,6 +138,22 @@ def create_metrics_table(data, periods_per_year, rfr, round_to=2):
                             columns,
                             fixed_columns={'headers':True, 'data':1}, 
                             sort_action='native',
+
+                            # Add tooltips
+                            tooltip_header={
+                                "CVaR 95%": "Expected Shortfall",
+                                "Tail Ratio 95%": "95th percentile / 5th percentile",
+                                "Calmar Ratio": "CAGR / Max DD",
+                                "Payoff Ratio": "Avg Win / Avg Loss"
+                            },
+
+                            # Style tooltips
+                            css=[{
+                                'selector': '.dash-table-tooltip',
+                                'rule': 'background-color: grey; color: white'
+                            }],
+
+                            # Cell / Header styling
                             style_as_list_view=True,
                             style_table={'minWidth':'100%',
                                         'minHeight':150},
@@ -146,6 +164,8 @@ def create_metrics_table(data, periods_per_year, rfr, round_to=2):
                                 'minWidth': '180px', 
                                 'width': '180px',
                                 'padding':'5px'},
+
+                            # Conditional Formatting
                             style_header_conditional=[{ 'if': { 'header_index': 0 }, 'backgroundColor': style.secondary_theme_color}],
                             style_data_conditional=[{'if': {'filter_query': f'{{{col}}} < 0',
                                                             'column_id': col},

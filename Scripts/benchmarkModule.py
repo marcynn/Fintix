@@ -97,7 +97,7 @@ def create_correlation_heatmap(data):
 
     return fig
 
-def create_statistics_table(data, main_asset, benchmark_asset, periods_per_year, round_to=2):
+def create_statistics_table(data, main_asset, benchmark_asset, periods_per_year, rfr, round_to=2):
 
     percentage = FormatTemplate.percentage(round_to)
 
@@ -111,7 +111,7 @@ def create_statistics_table(data, main_asset, benchmark_asset, periods_per_year,
 
     greeks = qs.stats.greeks(returns[main_asset], returns[benchmark_asset], periods=periods_per_year, prepare_returns=False)
     round_to = 3
-    
+
     try:
         correlation = round(returns[main_asset].corr(returns[benchmark_asset]),round_to)
     except:
@@ -129,6 +129,11 @@ def create_statistics_table(data, main_asset, benchmark_asset, periods_per_year,
     except:
         r_squared = np.nan
     try:
+        treynor = round((qs.stats.comp(returns[main_asset]) - rfr) / beta, round_to)
+    except:
+        treynor = np.nan
+
+    try:
         information_ratio = round(qs.stats.information_ratio(returns[main_asset], returns[benchmark_asset], prepare_returns=False), round_to)
     except:
         information_ratio = np.nan
@@ -141,7 +146,8 @@ def create_statistics_table(data, main_asset, benchmark_asset, periods_per_year,
             ('Alpha (excl. rfr)', [alpha]),
             ('Beta', [beta]),
             ('R-squared', [r_squared]),
-            ('Information Ratio',[information_ratio])
+            ('Treynor Ratio', [treynor]),
+            ('Information Ratio',[information_ratio]),
         ])
 
     df = pd.DataFrame(data)

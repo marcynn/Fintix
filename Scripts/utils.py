@@ -215,7 +215,6 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                             className='text-primary'),
                             ],xs=12, sm=12, md=12, lg=12, xl=6),
 
-
                             dbc.Row([
 
                                 dbc.Col([
@@ -235,9 +234,22 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                 dcc.Tabs(id='menu-tabs', value='compare', children=[
                                     dcc.Tab(label='Compare', value='compare', style=style.tab_style, selected_style=style.tab_selected_style),
                                     dcc.Tab(label='Returns', value='returns', style=style.tab_style, selected_style=style.tab_selected_style),
-                                    dcc.Tab(label='Benchmark', value='benchmark', style=style.tab_style, selected_style=style.tab_selected_style),
-                                    dcc.Tab(label='Rolling', value='rolling', style=style.tab_style, selected_style=style.tab_selected_style),
-                            ]),
+                                    dcc.Tab(id='benchmark-tab', label='Benchmark', value='benchmark', style=style.tab_style, selected_style=style.tab_selected_style),
+                                    dcc.Tab(id='rolling-tab', label='Rolling', value='rolling', style=style.tab_style, selected_style=style.tab_selected_style),
+
+                            ]), dbc.Tooltip(
+                                        "Adjust main and benchmark params to your liking. "
+                                        ,
+                                        target="benchmark-tab",
+                                        placement='bottom'
+                                        ),
+
+                                dbc.Tooltip(
+                                        "Adjust rolling periods param to the appropriate timeframe. "
+                                        ,
+                                        target="rolling-tab",
+                                        placement='bottom'
+                                        ),
                         ], className='mt-3'),
                 ])
 
@@ -307,7 +319,7 @@ def display_returns(prices, main_asset, round_to=2):
                             
     return display
 
-def display_benchmark(prices, main_asset, benchmark_asset, periods_per_year=periods_per_year):
+def display_benchmark(prices, main_asset, benchmark_asset, periods_per_year=periods_per_year, rfr=rfr):
     '''
     Creates the display of benchmark module that includes statistics table, scatter plot, correlation heatmap, and returns dist plot.
     '''
@@ -317,7 +329,7 @@ def display_benchmark(prices, main_asset, benchmark_asset, periods_per_year=peri
 
                     html.H3(f'Statistics {main_asset} vs {benchmark_asset}', className='p-4'),
 
-                    benchmarkModule.create_statistics_table(prices, main_asset, benchmark_asset, periods_per_year)
+                    benchmarkModule.create_statistics_table(prices, main_asset, benchmark_asset, periods_per_year, rfr)
                     ]),
 
                 dbc.Col([
@@ -360,6 +372,10 @@ def display_rolling(prices, main_asset, benchmark_asset, rolling_periods, rfr, p
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Volatility"))
+                    ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4'),
+
+                    dbc.Col([
+                        dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Correlation"))
                     ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4')
 
         ], className=style.dbc_row_style)

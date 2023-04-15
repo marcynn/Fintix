@@ -1,3 +1,4 @@
+from http import server
 from dash import dash, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 import pandas as pd
@@ -117,8 +118,8 @@ def update_main_bench_dropdowns(filtered_assets):
 # Update body
 @app.callback(Output('body','children'),
             [Input('apply-changes-btn', 'n_clicks'),
-            Input('menu-tabs','value'),
-            Input('stored-data','data')],
+            Input('stored-data','data'),
+            Input('menu-tabs','value')],
             [State('assets-dpdn', 'value'),
             State('start-date','date'),
             State('end-date','date'),
@@ -129,7 +130,7 @@ def update_main_bench_dropdowns(filtered_assets):
             State('main-asset','value'),
             State('benchmark-asset','value'),
             ])
-def display_body(n_clicks, tab, data, all_assets, start_date, end_date, initial_amount, rfr, periods_per_year, rolling_periods, main_asset, benchmark_asset):
+def display_body(n_clicks, data, tab, all_assets, start_date, end_date, initial_amount, rfr, periods_per_year, rolling_periods, main_asset, benchmark_asset):
     data = utils.json_to_df(data)
     
     if n_clicks >= 1: # This means that we want to initialize the app with all assets at first. 
@@ -147,9 +148,9 @@ def display_body(n_clicks, tab, data, all_assets, start_date, end_date, initial_
     elif tab == 'returns':
         return utils.display_returns(data, main_asset)
     elif tab == 'benchmark':
-        return utils.display_benchmark(data, main_asset, benchmark_asset, periods_per_year)
+        return utils.display_benchmark(data, main_asset, benchmark_asset, periods_per_year, rfr)
     elif tab == 'rolling':
         return utils.display_rolling(data, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year)
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
