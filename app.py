@@ -14,6 +14,7 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY],
 
 #-------------------App Layout-------------------
 app.layout = layout.layout
+app.title = 'Fintix'
 
 #-------------------Callbacks-------------------
 # Download data sample
