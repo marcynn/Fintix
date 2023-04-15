@@ -34,7 +34,7 @@ Download from Yahoo Finance
 ![image](https://user-images.githubusercontent.com/85497151/232109616-a9ffd11a-fd1f-4808-9dc7-76783417ed5a.png)
 
 ### Rolling
-![image](https://user-images.githubusercontent.com/85497151/232109669-9c72d70d-da99-4d58-8e15-4f8fb60d3793.png)
+![image](https://user-images.githubusercontent.com/85497151/232203347-6673b881-3350-455a-87eb-dde947becab7.png)
 
 ## Installation
 Install Python if you don't have it already installed. Plenty of resources online to do so.
@@ -52,6 +52,6 @@ python app.py
 ### License
 Fintix is distributed under MIT license. Refer to [LICENSE](https://github.com/marcynn/Fintix/blob/main/LICENSE) file for more details.
 ### Issues
-If you spot any bugs, typos, or if you have any question, please open an [issue](https://github.com/marcynn/Fintix/issues).
+If you spot any bugs, typos, or if you have any questions, please open an [issue](https://github.com/marcynn/Fintix/issues).
 ### Contributions
 Submit pull requests or reach out to me directly to add additional features.
