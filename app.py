@@ -23,7 +23,7 @@ app.title = 'Fintix'
                 prevent_initial_call=True)
 def func(n_clicks):
     if n_clicks >=1:
-        df = pd.read_csv('Data/sample-data.csv')
+        df = pd.read_csv('data/sample-data.csv')
         return dcc.send_data_frame(df.to_csv, "sample-data.csv", index=False)
 
 # Open/Close Yahoo Modal
