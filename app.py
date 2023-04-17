@@ -4,8 +4,8 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import yfinance as yf
 from datetime import timedelta
-import  Scripts.layout as layout
-import Scripts.utils as utils
+import  scripts.layout as layout
+import scripts.utils as utils
 
 # Create Dash App
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY], 

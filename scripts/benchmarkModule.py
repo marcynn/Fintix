@@ -3,7 +3,7 @@ import quantstats as qs
 import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
-import Scripts.style as style
+import scripts.style as style
 import plotly.figure_factory as ff
 from collections import OrderedDict
 from dash import dash_table

@@ -20,11 +20,11 @@ def get_ticker_universe(page=500):
             
     df = pd.DataFrame(dict_tickers.items())
     df.columns = ["Ticker", "Name"]
-    df.to_csv('../Data/tickers-universe.csv', index=False)
+    df.to_csv('../data/tickers-universe.csv', index=False)
     print('---%s seconds ---' %(time.time() - start_time))
 
 # Get tickers universe from Local File
-tickers = pd.read_csv('Data/tickers-universe.csv')
+tickers = pd.read_csv('data/tickers-universe.csv')
 tickers['Ticker + Name'] = tickers['Ticker'] + ' - ' + tickers['Name']
 tickers = tickers.drop_duplicates().dropna().reset_index(drop=True)
 

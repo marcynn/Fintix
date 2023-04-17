@@ -6,11 +6,11 @@ import plotly.graph_objs as go
 import base64
 import io
 import datetime
-import Scripts.style as style
-import Scripts.metricsTable as metricsTable
-import Scripts.returnsModule as returnsModule
-import Scripts.benchmarkModule as benchmarkModule
-import Scripts.rollingModule as rollingModule
+import scripts.style as style
+import scripts.metricsTable as metricsTable
+import scripts.returnsModule as returnsModule
+import scripts.benchmarkModule as benchmarkModule
+import scripts.rollingModule as rollingModule
 
 # Params
 initial_amount = 1000
@@ -99,6 +99,7 @@ def display_uploaded_file(contents, filename, date):
                             style_table={'minWidth':'100%'},
                             style_data=style.style_data,
                             style_header=style.style_header,
+                            css=[{'selector': '.current-page, last-page', 'rule': f'background-color: {style.main_theme_color};'}]
                         ),
                         
                         dbc.Row([
@@ -191,7 +192,7 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                                 id='start-date',
                                                 max_date_allowed=date,
                                                 initial_visible_month=date,
-                                                date=date
+                                                date=date,
                                         ),
 
                                     html.P(children='End Date', className=style.params_p_style),
@@ -206,13 +207,13 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                 
                                     dcc.Dropdown(id='main-asset', 
                                             value = '',
-                                            className='text-primary'),
+                                            ),
 
                                     html.P(children='Benchmark', className=style.params_p_style),  
                                 
                                     dcc.Dropdown(id='benchmark-asset', 
                                             value = '',
-                                            className='text-primary'),
+                                            ),
                             ],xs=12, sm=12, md=12, lg=12, xl=6),
 
                             dbc.Row([
@@ -222,8 +223,8 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                     dbc.Button(id='apply-changes-btn',
                                         children='Apply Changes',
                                         n_clicks=0,
-                                        className='mt-3 mb-3',
-                                        color='dark'),
+                                        className='mt-3 mb-3 border border-light',
+                                        color='primary'),
 
                                 ],xs=12, sm=12, md=12, lg=12, xl=6)
                             ]),

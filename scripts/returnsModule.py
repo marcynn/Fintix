@@ -3,8 +3,8 @@ import quantstats as qs
 from dash import dash_table
 from dash.dash_table import FormatTemplate
 import plotly.graph_objects as go
-import Scripts.style as style
-import Scripts.utils as utils
+import scripts.style as style
+import scripts.utils as utils
 
 def create_monthly_returns_table(prices, main_asset, round_to=2):
     returns = qs.utils._prepare_returns(prices)

@@ -1,7 +1,7 @@
 import dash_bootstrap_components as dbc
 from dash import html, dcc
-import Scripts.style as style
-import Scripts.tickerUniverse as tickUn
+import scripts.style as style
+import scripts.tickerUniverse as tickUn
 
 # Navbar
 navbar = dbc.NavbarSimple(id='nav-bar',
@@ -88,15 +88,15 @@ upload_file = dbc.Row([
                                         dbc.ModalHeader(dbc.ModalTitle("Download asset prices from Yahoo Finance")),
                                         dbc.ModalBody(children=[
                                                                 html.P('Assets'),
-                                                                dcc.Dropdown(id='yf-asset-dpdn', options=tickUn.ticker_labels, value='TSLA', multi=True, className='m-2 text-primary'), 
+                                                                dcc.Dropdown(id='yf-asset-dpdn', options=tickUn.ticker_labels, value='TSLA', multi=True, className='m-2'), 
                                                                 html.P('Date Period'),
-                                                                dcc.Dropdown(id='yf-periods-dpdn', options=['5d','1mo','3mo','6mo','1y','2y','5y','10y','ytd','max'], value='ytd', className='m-2 text-primary'),
+                                                                dcc.Dropdown(id='yf-periods-dpdn', options=['5d','1mo','3mo','6mo','1y','2y','5y','10y','ytd','max'], value='2y', className='m-2'),
                                                                 ]),
                                         dbc.ModalFooter(
                                             html.Div([
-                                                dbc.Button('Download csv', id='yf-download-btn', color="primary", n_clicks=0),
+                                                dbc.Button('Download csv', id='yf-download-btn', className="border border-light", color="primary", n_clicks=0),
                                                 dcc.Download(id="yf-download-csv"),
-                                                dbc.Button("Close", id="close-modal-btn", className="ms-2", color="dark", n_clicks=0)
+                                                dbc.Button("Close", id="close-modal-btn", className="ms-2 border border-light", color="dark", n_clicks=0)
                                             ])
                                         ),
                                     ],

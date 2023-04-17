@@ -7,7 +7,7 @@ from dash import dash_table
 from collections import OrderedDict
 from dash.dash_table import FormatTemplate
 from dash.dash_table.Format import Format, Scheme
-import Scripts.style as style
+import scripts.style as style
 
 def create_metrics_table(data, periods_per_year, rfr, round_to=2):
     prices = data.copy()

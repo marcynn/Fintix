@@ -1,6 +1,6 @@
 import quantstats as qs
 import plotly.graph_objs as go
-import Scripts.style as style
+import scripts.style as style
 
 def create_rolling_metrics(data, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, metric="Sharpe", round_to=3):
     '''
