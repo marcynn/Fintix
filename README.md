@@ -1,5 +1,6 @@
 # Fintix
-> I'll be sharing the deployed web app soon so that anyone can access the app without having to download it locally. 
+> Currently deployed on fintix.live 
+> - Note -> Locally running the app results in better performance.
 
 ## Description
 Quantitative analytics dash application for comparing investment strategies and assets. 
@@ -17,11 +18,11 @@ The data template format is a date column called "Date" followed by assets colum
 > - Adjust other parameters such as rolling window, periods per year for annualized metrics, risk free rate, main and benchmark assets for one to one comparison, etc.
 > - Filter loaded asset universe to the assets that you want to analyze. For example, load 15 assets, filter for 4.
 
-![image](https://user-images.githubusercontent.com/85497151/232108688-53f2ccbf-c340-45fe-886a-f29bccc197cf.png)
+![image](https://user-images.githubusercontent.com/85497151/232431388-fdfc1246-fa67-47fd-9a4b-ab8872ba1cc8.png)
 
 Download from Yahoo Finance
 
-![image](https://user-images.githubusercontent.com/85497151/232109247-29ec6a3e-251f-4d94-9e35-73d6b9af66cc.png)
+![image](https://user-images.githubusercontent.com/85497151/232432298-862264b0-b71e-4372-b74b-6453c01e0215.png)
 
 ## Modules
 ### Compare
@@ -37,14 +38,21 @@ Download from Yahoo Finance
 ![image](https://user-images.githubusercontent.com/85497151/232203347-6673b881-3350-455a-87eb-dde947becab7.png)
 
 ## Installation
-Install Python if you don't have it already installed. Plenty of resources online to do so.
-### Pre-requisites
+1. Install Python if you don't have it already installed. Plenty of resources online to do so.
+
+2. Clone repository to your local environment
+```bash
+git clone https://github.com/marcynn/Fintix.git
+```
+3. Change directory to where you cloned the repo
+
+4. Install requirements
 ```bash
 pip install -r requirements.txt
 ```
 > Consider creating a virual enviornment before installing requirements. 
 
-### Run App
+5. Run App
 ```bash
 python app.py
 ```
