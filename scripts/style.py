@@ -1,4 +1,3 @@
-from turtle import bgcolor
 import plotly.graph_objs as go 
 
 # Theme

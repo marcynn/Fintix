@@ -5,19 +5,6 @@ import scripts.tickerUniverse as tickUn
 
 # Navbar
 navbar = dbc.NavbarSimple(id='nav-bar',
-    # children=[
-    #     dbc.DropdownMenu(id='nav-dpdn',
-    #         children=[
-    #             dbc.DropdownMenuItem("Portfolio Optimization", header=False, className=None),
-    #             dbc.DropdownMenuItem("Macro Dashboard", href="#", className=None),
-    #         ],
-    #         nav=True,
-    #         in_navbar=True,
-    #         label="Coming Soon",
-    #         class_name = None
-    #     ),
-    #     dbc.NavItem(dbc.NavLink("About", href="#"), id='nav-item'),
-    # ],
     brand="Fintix",
     brand_href="#",
     color="primary",
