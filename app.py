@@ -5,6 +5,9 @@ import yfinance as yf
 from datetime import timedelta
 import  scripts.layout as layout
 import scripts.utils as utils
+import sys
+
+path = sys.path[0]
 
 # Create Dash App
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY], 
@@ -22,7 +25,7 @@ app.title = 'Fintix'
                 prevent_initial_call=True)
 def func(n_clicks):
     if n_clicks >=1:
-        df = pd.read_csv('data/sample-data.csv')
+        df = pd.read_csv(path+'/data/sample-data.csv')
         return dcc.send_data_frame(df.to_csv, "sample-data.csv", index=False)
 
 # Open/Close Yahoo Modal
