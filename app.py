@@ -46,7 +46,7 @@ def download_yahoo_data(n_clicks, assets, period):
         df = yf.download(assets, period=period)['Adj Close']
         if isinstance(df, pd.Series):
             df = pd.DataFrame(df)
-            df.columns = [assets]
+            df.columns = [assets] if type(assets) != list else assets
         return dcc.send_data_frame(df.to_csv, "yf-data.csv", index=True)
     
 # Store uploaded data
