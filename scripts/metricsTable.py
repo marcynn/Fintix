@@ -71,9 +71,9 @@ def create_metrics_table(data, periods_per_year, rfr, round_to=2):
             ('CVaR 95%', qs.stats.cvar(returns, sigma=1, confidence=0.95, prepare_returns=True)),
 
             # Risk-adjusted Ratios
-            ('Sharpe Ratio', qs.stats.sharpe(returns, rf=rfr, periods=periods_per_year, annualize=True)),
+            ('Sharpe Ratio', qs.stats.sharpe(returns, rf=rfr, periods=periods_per_year, annualize=False)),
             ('Sharpe Ratio P.A.', qs.stats.sharpe(returns, rf=rfr, periods=periods_per_year, annualize=True)),
-            ('Sortino Ratio', qs.stats.sortino(returns, rf=rfr, periods=periods_per_year, annualize=True)),
+            ('Sortino Ratio', qs.stats.sortino(returns, rf=rfr, periods=periods_per_year, annualize=False)),
             ('Sortino Ratio P.A.', qs.stats.sortino(returns, rf=rfr, periods=periods_per_year, annualize=True)),
             ('Calmar Ratio', qs.stats.calmar(returns, prepare_returns=True)),
             
