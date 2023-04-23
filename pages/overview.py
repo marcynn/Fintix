@@ -35,33 +35,67 @@ tickers = {'BTC-USD':'Bitcoin',
             'IWM': 'US Small Caps',
             'BIL': 'US Cash',
             'VNQ': 'US REITs',
-            'DBC': 'Commodities'
+            'DBC': 'Commodities',
+            'XLF': 'Financials',
+            'XLE': 'Energy',
+            'XLU': 'Utilities',
+            'XLY': 'Consumer Discretionary',
+            'XLI': 'Industrials',
+            'XLRE': 'Real Estate',
+            'XLP': 'Consumer Staples',
+            'XLK': 'Technology',
+            'XLC': 'Communications',
+            'XLV': 'Health Care',
+            'XLB': 'Materials'
             }
 
+tickers_mapping = {'overview': ['BTC-USD','QQQ','GLD','SPY','TLT','SHY','EEM','IGLB','IGSB','PFF','CWB','HYG','TIP','BND','EMB','IWM','BIL','VNQ','DBC'],
+                    'sectors': ['XLF','XLE','XLU','XLY','XLI','XLRE','XLP','XLK','XLC','XLV','XLB']
+                }
+
 # Download / Load Data from yfinance / local 
-def loadData(input_path=path+'/data/asset-classes-prices.csv', clean=True):
+def loadData(input_path=path+'/data/prices.csv', clean=True):
+    '''
+    Loads asset prices data from local file.
+    '''
     prices = pd.read_csv(input_path, index_col=0)
     if clean:
         prices.index = pd.to_datetime(prices.index)
         prices = prices.ffill()
     return prices
 
-def downloadData(tickers=list(tickers.keys()), period='max', output_path=path+'/data/asset-classes-prices.csv'):
+def downloadData(tickers=list(tickers.keys()), period='max', output_path=path+'/data/prices.csv'):
+    '''
+    Loads asset prices data from local file and adds new data to it. 
+    Creates local file if not available. 
+    '''
     try:
         prices = loadData()
-        max_date = str(prices.index[-1])[:10]
-        add_on_prices = yf.download(tickers, start=max_date)['Adj Close']
-        prices = pd.concat([prices, add_on_prices]) # Append new data to current csv file
-        prices = prices[~prices.index.duplicated()]
-    except: # Couldn't load data from local file
-        prices = yf.download(tickers, period='max')['Adj Close'] 
-    prices.to_csv(output_path)
+        max_date = prices.index[-1].strftime('%Y%m%d') 
+        weekday = datetime.datetime.today().weekday()
+        today = datetime.datetime.today().strftime('%Y%m%d') 
+        
+        # Retrieve new price data
+        if today != max_date and weekday not in [5,6]: # Last local data date != today and today is not weekend.
+            add_on_prices = yf.download(tickers, start=max_date)['Adj Close']
+            prices = pd.concat([prices, add_on_prices]) # Append new data to current csv file
+            prices = prices[~prices.index.duplicated()]
+        else: # no new data available
+            return prices
 
-prices = loadData()
+    except: # Couldn't load data from local file
+        print("Couldn't load data from local file.")
+        prices = yf.download(tickers, period='max')['Adj Close'] 
+
+    prices.to_csv(output_path)
+    return prices
+
+prices = downloadData()
 prices = prices.loc[start_date:]
 
-# Create table
-def create_asset_overview_table(prices):
+# Create performance table function 
+def create_performance_table(prices, mapping='overview'):
+    prices = prices[tickers_mapping[mapping]]
     returns = qs.utils._prepare_returns(prices)
 
     # Group by year and create returns table
@@ -84,10 +118,11 @@ def create_asset_overview_table(prices):
     # Add total returns to table
     total_rets = pd.DataFrame(qs.stats.comp(returns), columns=["Total"])
     merged = pd.merge(merged, total_rets, left_on=merged.Ticker, right_on=total_rets.index, how='left').drop('key_0', axis=1)
-
+    merged['Ticker'] = [f"[{t}](https://finance.yahoo.com/quote/{t})" for t in merged['Ticker'].unique()] # Redirect to Yahoo's ticker page.
+    
     # Create dash table
     data = merged.to_dict('records')
-    columns = [dict(id=i, name=i, type='numeric', format=percentage) for i in merged]
+    columns = [dict(id=i, name=i, presentation='markdown') if i =='Ticker' else dict(id=i, name=i, type='numeric', format=percentage) for i in merged.columns]
 
     dt = dash_table.DataTable(data, 
                             columns, 
@@ -125,35 +160,40 @@ def create_asset_overview_table(prices):
     return dt
 
 layout = dbc.Container([
-    
-    dbc.Row([
-        html.H3('Asset Class Performance', className='m-4'),
 
-        dbc.Col([
-            html.Div(id='last-refresh', className='float-end mb-2'),
+                    dcc.Interval(id='refresh-interval', 
+                                    interval=288000000, #8 hours, 288M ms
+                                    n_intervals=0
+                                    ),
 
-            dcc.Interval(id='refresh-interval', 
-                        interval=28800000, # 8hours
-                        n_intervals=1
-                        ),
+                    dbc.Row([
+            
+                        html.H3('Asset Class Performance', className='m-4'),
 
-            html.Div(id='asset-overview-table', children=create_asset_overview_table(prices))
-        ],xs=12, sm=12, md=12, lg=12, xl=12)
+                        dbc.Col([
+                            html.Div(id='asset-class-performance-table', children=create_performance_table(prices))
+                        ]),
 
-    ], className=style.dbc_row_style)
+                        html.H3('Sector Performance', className='m-4'),
+
+                        dbc.Col([
+                            html.Div(id='sector-performance-table', children=create_performance_table(prices, 'sectors'))
+                        ])
+
+                    ], className=style.dbc_row_style),
 
 ], fluid=True)
 
-@callback(Output('asset-overview-table', 'children'),
-        Output('last-refresh','children'),
-        [Input('refresh-interval','n_intervals')])
+@callback(Output('asset-class-performance-table', 'children'),
+        Output('sector-performance-table', 'children'),
+        [Input('refresh-interval','n_intervals')],
+        prevent_initial_call=True)
 def update_data(n_intervals):
-    try:
-        downloadData(tickers)
-        print('downloaded')
-    except:
-        pass
-    prices = loadData()
-    prices = prices.loc[start_date:]
-    last_date = prices.index[-1]
-    return create_asset_overview_table(prices), f'Last Update: {str(last_date)[:10]}'
+    if n_intervals > 0:
+        try:
+            downloadData(tickers)
+        except:
+            pass
+        prices = loadData()
+        prices = prices.loc[start_date:]
+        return create_performance_table(prices, 'overview'), create_performance_table(prices, 'sectors')
