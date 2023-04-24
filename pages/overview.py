@@ -71,9 +71,9 @@ def downloadData(tickers=list(tickers.keys()), period='max', output_path=path+'/
     '''
     try:
         prices = loadData()
-        max_date = prices.index[-1].strftime('%Y%m%d') 
+        max_date = str(prices.index[-1])[:10]
         weekday = datetime.datetime.today().weekday()
-        today = datetime.datetime.today().strftime('%Y%m%d') 
+        today = str(datetime.datetime.today())[:10]
         
         # Retrieve new price data
         if today != max_date and weekday not in [5,6]: # Last local data date != today and today is not weekend.
@@ -140,12 +140,13 @@ def create_performance_table(prices, mapping='overview'):
                                         'border': f'1px solid',
                                         'fontWeight':'bold',
                                         'textAlign': 'center',
-                                        'padding':'5px',
+                                        'padding':'10px',
                                         'backgroundColor': style.main_theme_color,
                                         'color':'white'},
                             style_cell={
                                 'textAlign': 'center',
-                                'padding':'5px'},
+                                'padding':'5px',
+                                'minWidth': 95},
 
                             style_data_conditional=[{'if': {'filter_query': f'{{{col}}} < 0',
                                                                 'column_id': col},
