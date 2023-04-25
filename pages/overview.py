@@ -64,29 +64,31 @@ def loadData(input_path=path+'/data/prices.csv', clean=True):
         prices = prices.ffill()
     return prices
 
-def downloadData(tickers=list(tickers.keys()), period='max', output_path=path+'/data/prices.csv'):
+def downloadData(tickers=list(tickers.keys()), output_path=path+'/data/prices.csv'):
     '''
     Loads asset prices data from local file and adds new data to it. 
     Creates local file if not available. 
     '''
     try:
         prices = loadData()
-        max_date = str(prices.index[-1])[:10]
-        weekday = datetime.datetime.today().weekday()
-        today = str(datetime.datetime.today())[:10]
-        
-        # Retrieve new price data
-        if today != max_date and weekday not in [5,6]: # Last local data date != today and today is not weekend.
-            add_on_prices = yf.download(tickers, start=max_date)['Adj Close']
+        max_date = pd.to_datetime(prices.index[-1])
+        delta_days = (datetime.datetime.today() - max_date).days
+
+        if delta_days >= 1: # Retrieve new price data.
+            start = max_date - datetime.timedelta(3) # Always retrieve data for past 3 days and re-adjust local file.
+            add_on_prices = yf.download(tickers, start=start)['Adj Close']
             prices = pd.concat([prices, add_on_prices]) # Append new data to current csv file
             prices = prices[~prices.index.duplicated()]
             prices = prices.ffill()
-        else: # no new data available
+            print("Latest data downloaded and appended.")
+
+        else:
             return prices
 
-    except: # Couldn't load data from local file
+    except: 
         print("Couldn't load data from local file.")
         prices = yf.download(tickers, period='max')['Adj Close'] 
+        print("All data downloaded from yfinance.")
 
     prices.to_csv(output_path)
     return prices
@@ -132,7 +134,7 @@ def create_performance_table(prices, mapping='overview'):
                             style_as_list_view=False,
                             style_table={'minWidth':'100%',
                                         'minHeight':150},
-                            style_data=style.style_data,
+                            style_data=style.create_table_data_style(padding='2px'),
                             style_header=style.style_header,
                             style_cell={
                                 'textAlign': 'center',
@@ -153,7 +155,8 @@ def create_performance_table(prices, mapping='overview'):
 layout = dbc.Container([
 
                     dcc.Interval(id='refresh-interval', 
-                                    interval=288000000, #8 hours, 288M ms
+                                    #interval=288000000, #8 hours, 288M ms
+                                    interval=6000,
                                     n_intervals=0
                                     ),
 

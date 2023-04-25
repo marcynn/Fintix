@@ -29,14 +29,17 @@ tab_selected_style = {
     'borderTop': '1px solid #d6d6d6',
     'borderBottom': '1px solid #d6d6d6',
     'backgroundColor': main_theme_color,
-    'color': 'white',
+    'color': secondary_theme_color,
     'padding': '6px'}
 
 # Table style 
-style_data={'whiteSpace': 'normal',
+def create_table_data_style(padding='10px'):
+    style={'whiteSpace': 'normal',
             'backgroundColor': secondary_theme_color,
             'color':'white', 
-            'padding':'10px'}
+            'padding':padding}
+    return style
+style_data = create_table_data_style()
 
 style_header={
     'border': f'1px solid',
