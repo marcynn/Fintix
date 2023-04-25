@@ -16,8 +16,8 @@ dash.register_page(__name__, path='/')
 header = dbc.Row([
     
             dbc.Col([
-                html.H1('Analytics at your fingertips. One sheet at a time.',  
-                        className='text-center'
+                html.H3('Analytics at your fingertips. One sheet at a time.',  
+                        className='text-center text-warning'
                         )
                     ], xs=12, sm=12, md=12, lg=12, xl=12),
         ], className=style.dbc_row_style)
@@ -65,18 +65,18 @@ upload_file = dbc.Row([
                             dbc.Col([
 
                                 # Download data-sample button 
-                                dbc.Button("Download CSV Template", id="btn_csv", className='m-2', color='primary', n_clicks=0),
+                                dbc.Button("Download CSV Template", id="btn_csv", className='m-2', size='sm', color='primary', n_clicks=0),
                                 dcc.Download(id="download-dataframe-csv"),
             
                                 # Download data from yfinance modal
-                                dbc.Button("Download Yahoo Data", id="open-modal-btn", className='m-2', color='primary', n_clicks=0),
+                                dbc.Button("Download Yahoo Data", id="open-modal-btn", className='m-2', size='sm', color='primary', n_clicks=0),
                                 dbc.Modal(
                                     [
-                                        dbc.ModalHeader(dbc.ModalTitle("Download asset prices from Yahoo Finance")),
+                                        dbc.ModalHeader(dbc.ModalTitle("Download asset prices from Yahoo Finance"), className='text-center'),
                                         dbc.ModalBody(children=[
-                                                                html.P('Assets'),
+                                                                html.P('Assets', className=style.params_p_style),
                                                                 dcc.Dropdown(id='yf-asset-dpdn', options=tickUn.ticker_labels, value='TSLA', multi=True, className='m-2'), 
-                                                                html.P('Date Period'),
+                                                                html.P('Date Period', className=style.params_p_style),
                                                                 dcc.Dropdown(id='yf-periods-dpdn', options=['5d','1mo','3mo','6mo','1y','2y','5y','10y','ytd','max'], value='2y', className='m-2'),
                                                                 ]),
                                         dbc.ModalFooter(
@@ -95,11 +95,11 @@ upload_file = dbc.Row([
                         
                         # Parameters spinner + div
                         dbc.Spinner(children=[html.Div(id='params')], 
-                        size="lg", 
-                        color="primary", 
-                        type="border", 
-                        fullscreen=False),
-                    
+                                size="lg", 
+                                color="primary", 
+                                type="border", 
+                                fullscreen=False),
+            
                         ],xs=12, sm=12, md=12, lg=6, xl=6),
                 
                 ], className=style.dbc_row_style)
@@ -245,7 +245,7 @@ def display_body(n_clicks, data, tab, all_assets, start_date, end_date, initial_
     if tab == 'compare':
         return utils.display_compare(data, initial_amount, rfr, periods_per_year)
     elif tab == 'returns':
-        return utils.display_returns(data, main_asset)
+        return utils.display_returns(data, main_asset, benchmark_asset)
     elif tab == 'benchmark':
         return utils.display_benchmark(data, main_asset, benchmark_asset, periods_per_year, rfr)
     elif tab == 'rolling':

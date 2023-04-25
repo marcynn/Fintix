@@ -37,7 +37,7 @@ def create_rolling_metrics(data, main_asset, benchmark_asset, rolling_periods, r
         series = returns[main_asset].rolling(rolling_periods).corr(returns[benchmark_asset])
         yaxisTitle = f"{main_asset} vs {benchmark_asset}"
 
-    series = round(series, round_to)
+    series = round(series, round_to).dropna()
     avg = round(series.dropna().mean(),round_to)
 
     traces = [go.Scatter(x=series.index, 
@@ -58,4 +58,5 @@ def create_rolling_metrics(data, main_asset, benchmark_asset, rolling_periods, r
                                     ytickformat=ytickformat, yaxisTitle=yaxisTitle)
 
     figure = go.Figure(traces, layout)
+    figure = style.add_range_slider(figure, rangeSlideVisible=False)
     return figure

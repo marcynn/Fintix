@@ -3,7 +3,7 @@ import dash
 import dash_bootstrap_components as dbc
 
 # Create Dash App
-app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.DARKLY], 
+app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.CYBORG], 
                     meta_tags=[{'name': 'viewport',
                             'content': 'width=device-width, initial-scale=1.0'}])
 
@@ -20,14 +20,14 @@ app.layout = html.Div(
                     ],
                     nav=True,
                     label="More Pages",
-                    className='me-5 fs-4'
+                    className='me-5'
                 ),
             id='nav-bar',
             brand="Fintix",
             brand_href="#",
-            color="primary",
+            color="dark",
             dark=True,
-            brand_style= {'fontSize':40},
+            brand_style= {'fontSize':30},
             fluid=True,
             className='ms-2 me-2 mb-3'                 
         ),
@@ -40,4 +40,4 @@ app.layout = html.Div(
 app.title = 'Fintix'
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)

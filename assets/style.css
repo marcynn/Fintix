@@ -20,7 +20,7 @@
 
 .VirtualizedSelectFocusedOption {
     background-color: rgb(25, 25, 25);
-    color: red;
+    color: #ff8800;
 }
 
 /* Input */

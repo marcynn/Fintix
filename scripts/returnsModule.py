@@ -41,16 +41,15 @@ def create_monthly_returns_table(prices, main_asset, round_to=2):
                             columns, 
                             fixed_columns={'headers':True, 'data':1}, 
                             sort_action='native',
-                            style_as_list_view=True,
+                            style_as_list_view=False,
                             style_table={'minWidth':'100%',
                                         'minHeight':150},
                             style_data=style.style_data,
                             style_header=style.style_header,
                             style_cell={
                                 'textAlign': 'center',
-                                'minWidth': '80px', 
-                                'width': '80px',
-                                'padding':'5px'},
+                                'padding':'5px',
+                                'minWidth': 95},
                             style_data_conditional=[{'if': {'filter_query': f'{{{col}}} < 0',
                                                             'column_id': col},
                                                             'color':style.red} for col in grouped_rets.columns] +                          
@@ -76,20 +75,22 @@ def create_eoyReturns_bar(data):
 
     layout = go.Layout(style.scatter_charts_layout(title=f'EOY Returns', ytickformat=',.0%'))
     fig = go.Figure(traces, layout)
-    fig.update_layout(height=400)
     fig.layout.xaxis.tickvals = eoy_returns.index # Make xaxis dates as categorical instead of continuous
-    
     return fig
 
 def create_daily_returns_plot(data, main_asset):
     prices = data.copy()
     returns = qs.utils._prepare_returns(prices)
-
     traces = [go.Scatter(x=returns.index, y=returns[main_asset], mode='lines', name=a) for a in [main_asset]]
-
     layout = style.scatter_charts_layout(title=f'Returns Series {main_asset}',  ytickformat=',.1%')
-
     fig = go.Figure(traces, layout)
-    fig.update_layout(height=400)
-    
+    fig = style.add_range_slider(fig)
+    return fig
+
+def create_returns_box_plot(data, main_asset, benchmark_asset):
+    prices = data.copy()
+    returns = qs.utils._prepare_returns(prices)
+    traces = [go.Box(y=returns[i], name=i) for i in [main_asset, benchmark_asset]]
+    layout = style.scatter_charts_layout(title=f'Returns Quantiles -  {main_asset} vs {benchmark_asset}',  ytickformat=',.1%')
+    fig = go.Figure(traces, layout)
     return fig

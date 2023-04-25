@@ -126,7 +126,7 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
 
     display = html.Div([
 
-                        html.H3('Adjust Parameters', className='m-4'),
+                        html.H5('Adjust Parameters', className=style.h5_style),
 
                         dbc.Row([
 
@@ -229,7 +229,7 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                 ],xs=12, sm=12, md=12, lg=12, xl=6)
                             ]),
 
-                        ], className=style.dbc_row_style + ' bg-primary'),
+                        ], className=style.dbc_row_style),
 
                         dbc.Row([
                                 dcc.Tabs(id='menu-tabs', value='compare', children=[
@@ -272,18 +272,20 @@ def display_compare(data, initial_amount=initial_amount, rfr=rfr, periods_per_ye
     index_traces = [go.Scatter(x=index.index, y=index[a], mode='lines', name=a) for a in assets]
     index_layout = style.scatter_charts_layout(title=f'Performance of {style.accounting_format(initial_amount)}')
     index_fig = go.Figure(index_traces, index_layout)
+    index_fig = style.add_range_slider(index_fig)
     
     # Drawdown
     drawdown_traces = [go.Scatter(x=drawdown.index, y=drawdown[a], mode='lines', name=a) for a in assets]
     drawdown_layout = style.scatter_charts_layout(title='Drawdown', ytickformat=',.1%')
     drawdown_fig = go.Figure(drawdown_traces, drawdown_layout)
+    drawdown_fig = style.add_range_slider(drawdown_fig)
 
     display = dbc.Row([
 
-                    dbc.Row([
-                        html.H3(f'Metrics', className='p-4'),
-                        metricsTable.create_metrics_table(prices, periods_per_year, rfr)
-                    ]),
+                    dbc.Col([
+                        html.H5(f'Metrics', className=style.h5_style),
+                        html.Div([metricsTable.create_metrics_table(prices, periods_per_year, rfr)], className='mb-4')
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border'),
                     
                     dbc.Col([
                         dcc.Graph(figure=index_fig)
@@ -297,16 +299,16 @@ def display_compare(data, initial_amount=initial_amount, rfr=rfr, periods_per_ye
 
     return display
 
-def display_returns(prices, main_asset, round_to=2):
+def display_returns(prices, main_asset, benchmark_asset, round_to=2):
     '''
     Creates the display of returns module that includes monthly, eoy, and time series of returns.
     '''
     display = dbc.Row([
 
-                    dbc.Row([
-                        html.H3(f'Monthly Returns - {main_asset}', className='p-4'),
-                        returnsModule.create_monthly_returns_table(prices, main_asset, round_to)
-                    ]),
+                    dbc.Col([
+                        html.H5(f'Monthly Returns - {main_asset}', className=style.h5_style),
+                        html.Div([returnsModule.create_monthly_returns_table(prices, main_asset, round_to)],className='mb-4')
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border'),
                     
                     dbc.Col([
                         dcc.Graph(figure=returnsModule.create_eoyReturns_bar(prices))
@@ -315,6 +317,10 @@ def display_returns(prices, main_asset, round_to=2):
                     dbc.Col([
                         dcc.Graph(figure=returnsModule.create_daily_returns_plot(prices, main_asset))
                     ],xs=12, sm=12, md=12, lg=12, xl=12, className='border mt-4'),
+
+                    dbc.Col([
+                        dcc.Graph(figure=returnsModule.create_returns_box_plot(prices, main_asset, benchmark_asset))
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border mt-4')
 
             ],className=style.dbc_row_style)
                             
@@ -326,12 +332,12 @@ def display_benchmark(prices, main_asset, benchmark_asset, periods_per_year=peri
     '''
     display = dbc.Row([
 
-                dbc.Row([
+                dbc.Col([
 
-                    html.H3(f'Statistics {main_asset} vs {benchmark_asset}', className='p-4'),
+                    html.H5(f'Statistics {main_asset} vs {benchmark_asset}', className=style.h5_style),
 
                     benchmarkModule.create_statistics_table(prices, main_asset, benchmark_asset, periods_per_year, rfr)
-                    ]),
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border'),
 
                 dbc.Col([
                     dcc.Graph(figure=benchmarkModule.create_scatter_plot(prices, main_asset, benchmark_asset))

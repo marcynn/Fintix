@@ -43,7 +43,8 @@ def create_distribution_plot(data, main_asset, benchmark_asset):
 
     bin_size = 0.01
     fig = ff.create_distplot(hist_data, group_labels, bin_size=bin_size, histnorm='')
-    fig.update_layout(title=f'Returns Distribution',
+    fig.update_layout(title=dict(text=f'<b>Returns Distribution</b>',
+                                font=dict(color=style.main_theme_color)),
                     title_x=0.5,
                     font=dict(size=15),
                     hoverlabel=dict(font_size=15),
@@ -51,6 +52,7 @@ def create_distribution_plot(data, main_asset, benchmark_asset):
                     paper_bgcolor=style.secondary_theme_color, 
                     plot_bgcolor=style.secondary_theme_color,
                     legend=dict(y=-0.2))
+
     return fig
 
 def create_correlation_heatmap(data):
@@ -75,7 +77,8 @@ def create_correlation_heatmap(data):
                         )
 
     fig.update_xaxes(side="bottom")
-    fig.update_layout(title='Correlation Heatmap',
+    fig.update_layout(title=dict(text='<b>Correlation Heatmap</b>',
+                                font=dict(color=style.main_theme_color)),
                         title_x=0.5,
                         font=dict(size=15),
                         hoverlabel=dict(font_size=15),

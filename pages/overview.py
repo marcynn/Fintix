@@ -80,6 +80,7 @@ def downloadData(tickers=list(tickers.keys()), period='max', output_path=path+'/
             add_on_prices = yf.download(tickers, start=max_date)['Adj Close']
             prices = pd.concat([prices, add_on_prices]) # Append new data to current csv file
             prices = prices[~prices.index.duplicated()]
+            prices = prices.ffill()
         else: # no new data available
             return prices
 
@@ -131,23 +132,12 @@ def create_performance_table(prices, mapping='overview'):
                             style_as_list_view=False,
                             style_table={'minWidth':'100%',
                                         'minHeight':150},
-                            style_data={'whiteSpace': 'normal',
-                                        'backgroundColor': style.secondary_theme_color,
-                                        'color':'white', 
-                                        'padding':'5px',
-                                        'fontSize':'15px'},
-                            style_header={
-                                        'border': f'1px solid',
-                                        'fontWeight':'bold',
-                                        'textAlign': 'center',
-                                        'padding':'10px',
-                                        'backgroundColor': style.main_theme_color,
-                                        'color':'white'},
+                            style_data=style.style_data,
+                            style_header=style.style_header,
                             style_cell={
                                 'textAlign': 'center',
                                 'padding':'5px',
                                 'minWidth': 95},
-
                             style_data_conditional=[{'if': {'filter_query': f'{{{col}}} < 0',
                                                                 'column_id': col},
                                                                 'backgroundColor':'red'} for col in merged.columns] +                          
@@ -169,13 +159,13 @@ layout = dbc.Container([
 
                     dbc.Row([
             
-                        html.H3('Asset Class Performance', className='m-4'),
+                        html.H5('Asset Class Performance', className=style.h5_style),
 
                         dbc.Col([
                             html.Div(id='asset-class-performance-table', children=create_performance_table(prices))
                         ]),
 
-                        html.H3('Sector Performance', className='m-4'),
+                        html.H5('Sector Performance', className=style.h5_style),
 
                         dbc.Col([
                             html.Div(id='sector-performance-table', children=create_performance_table(prices, 'sectors'))
