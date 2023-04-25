@@ -155,8 +155,7 @@ def create_performance_table(prices, mapping='overview'):
 layout = dbc.Container([
 
                     dcc.Interval(id='refresh-interval', 
-                                    #interval=288000000, #8 hours, 288M ms
-                                    interval=6000,
+                                    interval=288000000, #8 hours, 288M ms
                                     n_intervals=0
                                     ),
 
