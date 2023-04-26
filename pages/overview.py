@@ -46,11 +46,17 @@ tickers = {'BTC-USD':'Bitcoin',
             'XLK': 'Technology',
             'XLC': 'Communications',
             'XLV': 'Health Care',
-            'XLB': 'Materials'
+            'XLB': 'Materials',
+            'VLUE': 'Value',
+            'SIZE': 'Size',
+            'MTUM': 'Momentum',
+            'QUAL': 'Quality',
+            'USMV': 'Min Vol'
             }
 
 tickers_mapping = {'overview': ['BTC-USD','QQQ','GLD','SPY','TLT','SHY','EEM','IGLB','IGSB','PFF','CWB','HYG','TIP','BND','EMB','IWM','BIL','VNQ','DBC'],
-                    'sectors': ['XLF','XLE','XLU','XLY','XLI','XLRE','XLP','XLK','XLC','XLV','XLB']
+                    'sectors': ['XLF','XLE','XLU','XLY','XLI','XLRE','XLP','XLK','XLC','XLV','XLB'],
+                    'factors': ['VLUE','SIZE','MTUM','QUAL','USMV']
                 }
 
 # Download / Load Data from yfinance / local 
@@ -140,15 +146,24 @@ def create_performance_table(prices, mapping='overview'):
                                 'textAlign': 'center',
                                 'padding':'5px',
                                 'minWidth': 95},
-                            style_data_conditional=[{'if': {'filter_query': f'{{{col}}} < 0',
+                            style_data_conditional=
+                                                    [{'if': {'filter_query': f'{{{col}}} < 0',
                                                                 'column_id': col},
-                                                                'backgroundColor':'red'} for col in merged.columns] +                          
+                                                                'color':'red'} for col in merged.columns] +                          
                                                         [{'if': {'filter_query': f'{{{col}}} > 0',
                                                                 'column_id': col},
-                                                        'backgroundColor':'green'}
+                                                        'color':'green'}
                                                         for col in merged.columns] +
                                                         [{'if': {'column_id': 'Year'},
-                                                        'color':'white'}]                                              
+                                                        }]
+                                                        +
+                                                        style.style_table_column_by_minmax_value(merged)
+                                                        + 
+
+                                                        [{'if': {'filter_query': '{{{}}} is blank'.format(col),
+                                                            'column_id': col},
+                                                            'backgroundColor': '#282828',
+                                                        } for col in merged.columns]
                                                         )
     return dt
 
@@ -167,10 +182,16 @@ layout = dbc.Container([
                             html.Div(id='asset-class-performance-table', children=create_performance_table(prices))
                         ]),
 
-                        html.H5('Sector Performance', className=style.h5_style),
+                        html.H5('Sectors Performance', className=style.h5_style),
 
                         dbc.Col([
                             html.Div(id='sector-performance-table', children=create_performance_table(prices, 'sectors'))
+                        ]),
+
+                        html.H5('Factors Performance', className=style.h5_style),
+
+                        dbc.Col([
+                            html.Div(id='factor-performance-table', children=create_performance_table(prices, 'factors'))
                         ])
 
                     ], className=style.dbc_row_style),
@@ -179,6 +200,7 @@ layout = dbc.Container([
 
 @callback(Output('asset-class-performance-table', 'children'),
         Output('sector-performance-table', 'children'),
+        Output('factor-performance-table', 'children'),
         [Input('refresh-interval','n_intervals')],
         prevent_initial_call=True)
 def update_data(n_intervals):
@@ -189,4 +211,4 @@ def update_data(n_intervals):
             pass
         prices = loadData()
         prices = prices.loc[start_date:]
-        return create_performance_table(prices, 'overview'), create_performance_table(prices, 'sectors')
+        return create_performance_table(prices, 'overview'), create_performance_table(prices, 'sectors'), create_performance_table(prices, 'factors')

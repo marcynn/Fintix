@@ -48,7 +48,7 @@ def json_to_df(data):
             data.index = pd.to_datetime(data.index)
         except:
             print('Could not change index to datetime')
-            return 
+            return
         return data
 
 #------------------- Data Load-------------------
@@ -63,13 +63,13 @@ def parse_content(contents, filename):
         if 'csv' in filename:
             df = pd.read_csv(
                 io.StringIO(decoded.decode('utf-8')))
-            
+
         elif 'xls' in filename:
             df = pd.read_excel(io.BytesIO(decoded))
     except:
         print('Error parsing uploaded table')
         return
-    
+
     return df
 
 def display_uploaded_file(contents, filename, date):
@@ -89,8 +89,8 @@ def display_uploaded_file(contents, filename, date):
                         dash_table.DataTable(
                             data=df.to_dict('records'),
                             columns=[{'name': i, 'id': i} for i in df.columns],
-                            page_size=5, 
-                            fixed_columns={'headers':True, 'data':1}, 
+                            page_size=5,
+                            fixed_columns={'headers':True, 'data':1},
                             style_cell={
                                 'textAlign': 'center',
                                 'padding':'5px'},
@@ -101,7 +101,7 @@ def display_uploaded_file(contents, filename, date):
                             style_header=style.style_header,
                             css=[{'selector': '.current-page, last-page', 'rule': f'background-color: {style.main_theme_color};'}]
                         ),
-                        
+
                         dbc.Row([
 
                             dbc.Col([
@@ -112,11 +112,11 @@ def display_uploaded_file(contents, filename, date):
 
                             ], className='mb-3')
                         ]),
-                        
+
                         dcc.Store(id='stored-data', data=df.to_dict('records')),
                     ]),
-                ], style.dbc_row_style)    
-                    
+                ], style.dbc_row_style)
+
     return display
 
 #-------------------Body-------------------
@@ -131,37 +131,37 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                         dbc.Row([
 
                                 dbc.Row([
-                                    html.P(children='Filter for Asset', className=style.params_p_style), 
+                                    html.P(children='Filter for Asset', className=style.params_p_style),
                                     dcc.Dropdown(id='assets-dpdn',
                                                     multi=True,
                                                     className='text-primary')
                                         ], className='mb-3'),
-                            
-                                dbc.Col([
-                                    html.P(children='Initial amount', className=style.params_p_style), 
 
-                                    dcc.Input(id='initial-amount', 
-                                            type='number', 
-                                            placeholder='1,000', 
-                                            value=initial_amount, 
+                                dbc.Col([
+                                    html.P(children='Initial amount', className=style.params_p_style),
+
+                                    dcc.Input(id='initial-amount',
+                                            type='number',
+                                            placeholder='1,000',
+                                            value=initial_amount,
                                             min=1,
                                             ),
 
                                     html.P(children='Risk-free rate', className=style.params_p_style),
 
-                                    dcc.Input(id='rfr', 
-                                            type='number', 
-                                            placeholder='Risk-free rate', 
-                                            value=rfr, 
+                                    dcc.Input(id='rfr',
+                                            type='number',
+                                            placeholder='Risk-free rate',
+                                            value=rfr,
                                             step=0.01,
                                             ),
 
                                     html.P(children='Periods per year', className=style.params_p_style),
 
-                                    dcc.Input(id='periods-per-year', 
-                                            type='number', 
-                                            placeholder='Periods per year', 
-                                            value=periods_per_year, 
+                                    dcc.Input(id='periods-per-year',
+                                            type='number',
+                                            placeholder='Periods per year',
+                                            value=periods_per_year,
                                             step=1,
                                             min=1,
                                             ),
@@ -174,13 +174,13 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                         target="periods-per-year",
                                         ),
 
-                                    html.P(children='Rolling periods', className=style.params_p_style),  
-                                
-                                    dcc.Input(id='rolling-periods', 
-                                            type='number', 
-                                            placeholder='Rolling periods', 
-                                            value=rolling_periods, 
-                                            step=1, 
+                                    html.P(children='Rolling periods', className=style.params_p_style),
+
+                                    dcc.Input(id='rolling-periods',
+                                            type='number',
+                                            placeholder='Rolling periods',
+                                            value=rolling_periods,
+                                            step=1,
                                             min=1,
                                             )
                                 ], xs=12, sm=12, md=12, lg=12, xl=6),
@@ -196,22 +196,22 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                         ),
 
                                     html.P(children='End Date', className=style.params_p_style),
-                                    
+
                                     dcc.DatePickerSingle(
                                         id='end-date',
                                         max_date_allowed=date,
                                         initial_visible_month=date,
                                         date=date),
 
-                                    html.P(children='Main', className=style.params_p_style),  
-                                
-                                    dcc.Dropdown(id='main-asset', 
+                                    html.P(children='Main', className=style.params_p_style),
+
+                                    dcc.Dropdown(id='main-asset',
                                             value = '',
                                             ),
 
-                                    html.P(children='Benchmark', className=style.params_p_style),  
-                                
-                                    dcc.Dropdown(id='benchmark-asset', 
+                                    html.P(children='Benchmark', className=style.params_p_style),
+
+                                    dcc.Dropdown(id='benchmark-asset',
                                             value = '',
                                             ),
                             ],xs=12, sm=12, md=12, lg=12, xl=6),
@@ -273,7 +273,7 @@ def display_compare(data, initial_amount=initial_amount, rfr=rfr, periods_per_ye
     index_layout = style.scatter_charts_layout(title=f'Performance of {style.accounting_format(initial_amount)}')
     index_fig = go.Figure(index_traces, index_layout)
     index_fig = style.add_range_slider(index_fig)
-    
+
     # Drawdown
     drawdown_traces = [go.Scatter(x=drawdown.index, y=drawdown[a], mode='lines', name=a) for a in assets]
     drawdown_layout = style.scatter_charts_layout(title='Drawdown', ytickformat=',.1%')
@@ -285,15 +285,15 @@ def display_compare(data, initial_amount=initial_amount, rfr=rfr, periods_per_ye
                     dbc.Col([
                         html.H5(f'Metrics', className=style.h5_style),
                         html.Div([metricsTable.create_metrics_table(prices, periods_per_year, rfr)], className='mb-4')
-                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border'),
-                    
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
+
                     dbc.Col([
                         dcc.Graph(figure=index_fig)
-                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border mt-4'),
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
 
                     dbc.Col([
                         dcc.Graph(figure=drawdown_fig)
-                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border mt-4'),
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
 
     ], className=style.dbc_row_style)
 
@@ -308,22 +308,22 @@ def display_returns(prices, main_asset, benchmark_asset, round_to=2):
                     dbc.Col([
                         html.H5(f'Monthly Returns - {main_asset}', className=style.h5_style),
                         html.Div([returnsModule.create_monthly_returns_table(prices, main_asset, round_to)],className='mb-4')
-                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border'),
-                    
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
+
                     dbc.Col([
                         dcc.Graph(figure=returnsModule.create_eoyReturns_bar(prices))
-                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border mt-4'),
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
 
                     dbc.Col([
                         dcc.Graph(figure=returnsModule.create_daily_returns_plot(prices, main_asset))
-                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border mt-4'),
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
 
                     dbc.Col([
                         dcc.Graph(figure=returnsModule.create_returns_box_plot(prices, main_asset, benchmark_asset))
-                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border mt-4')
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style)
 
             ],className=style.dbc_row_style)
-                            
+
     return display
 
 def display_benchmark(prices, main_asset, benchmark_asset, periods_per_year=periods_per_year, rfr=rfr):
@@ -334,23 +334,23 @@ def display_benchmark(prices, main_asset, benchmark_asset, periods_per_year=peri
 
                 dbc.Col([
 
-                    html.H5(f'Statistics {main_asset} vs {benchmark_asset}', className=style.h5_style),
+                    html.H5(f'Statistics - {main_asset} vs {benchmark_asset}', className=style.h5_style),
 
                     benchmarkModule.create_statistics_table(prices, main_asset, benchmark_asset, periods_per_year, rfr)
-                    ],xs=12, sm=12, md=12, lg=12, xl=12, className='border'),
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
 
                 dbc.Col([
                     dcc.Graph(figure=benchmarkModule.create_scatter_plot(prices, main_asset, benchmark_asset))
-                ], xs=12, sm=12, md=12, lg=12, xl=12, className='border mt-4'),
+                ], xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
 
                 dbc.Col([
                     dcc.Graph(figure=benchmarkModule.create_distribution_plot(prices, main_asset, benchmark_asset))
-                ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4'),
+                ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
 
                 dbc.Col([
                     dcc.Graph(figure=benchmarkModule.create_correlation_heatmap(prices))
-                ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4')
-            
+                ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style)
+
             ], className=style.dbc_row_style)
 
     return display
@@ -363,28 +363,28 @@ def display_rolling(prices, main_asset, benchmark_asset, rolling_periods, rfr, p
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Alpha"))
-                    ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4'),
+                    ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Beta"))
-                    ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4'),
+                    ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Sharpe"))
-                    ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4'),
+                    ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Sortino"))
-                    ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4'),
+                    ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Volatility"))
-                    ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4'),
+                    ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Correlation"))
-                    ], xs=12, sm=12, md=12, lg=6, xl=6, className='border mt-4')
+                    ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style)
 
         ], className=style.dbc_row_style)
-    
+
     return display

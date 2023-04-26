@@ -19,15 +19,15 @@ def create_monthly_returns_table(prices, main_asset, round_to=2):
     monthly_grouped_rets = df.groupby([df['Year'], df['Month']]).apply(qs.stats.comp)
     monthly_grouped_rets.reset_index(inplace=True)
     monthly_grouped_rets = monthly_grouped_rets.pivot_table(values=main_asset,index='Year',columns='Month')
-    
+
     # Sort unique months in proper order
     months_mapping = utils.months_mapping
 
-    unique_months = [] 
+    unique_months = []
     for month in months_mapping.values():
         if month in monthly_grouped_rets.columns:
             unique_months.append(month)
-    monthly_grouped_rets = monthly_grouped_rets[unique_months] # Re-order monthly returns columns to the proper order    
+    monthly_grouped_rets = monthly_grouped_rets[unique_months] # Re-order monthly returns columns to the proper order
 
     # Create yearly / total returns and merge them with monthly returns table
     yearly_grouped_rets = df[['Year',main_asset]].groupby(df['Year']).apply(qs.stats.comp).drop('Year',axis=1).rename(columns={main_asset:'Total'})
@@ -37,9 +37,9 @@ def create_monthly_returns_table(prices, main_asset, round_to=2):
     data = grouped_rets.to_dict('records')
     columns = [dict(id=i, name=i, type='numeric', format=percentage) if i!='Year' else dict(id=i, name=i) for i in grouped_rets.columns]
 
-    dt = dash_table.DataTable(data, 
-                            columns, 
-                            fixed_columns={'headers':True, 'data':1}, 
+    dt = dash_table.DataTable(data,
+                            columns,
+                            fixed_columns={'headers':True, 'data':1},
                             sort_action='native',
                             style_as_list_view=False,
                             style_table={'minWidth':'100%',
@@ -52,14 +52,14 @@ def create_monthly_returns_table(prices, main_asset, round_to=2):
                                 'minWidth': 95},
                             style_data_conditional=[{'if': {'filter_query': f'{{{col}}} < 0',
                                                             'column_id': col},
-                                                            'color':style.red} for col in grouped_rets.columns] +                          
+                                                            'color':style.red} for col in grouped_rets.columns] +
                                                     [{'if': {'filter_query': f'{{{col}}} > 0',
                                                             'column_id': col},
                                                     'color':style.green}
                                                     for col in grouped_rets.columns] +
                                                     [{'if': {'column_id': 'Year'},
                                                     'color':'white'}])
-                                                    
+
     return dt
 
 def create_eoyReturns_bar(data):
@@ -82,7 +82,7 @@ def create_daily_returns_plot(data, main_asset):
     prices = data.copy()
     returns = qs.utils._prepare_returns(prices)
     traces = [go.Scatter(x=returns.index, y=returns[main_asset], mode='lines', name=a) for a in [main_asset]]
-    layout = style.scatter_charts_layout(title=f'Returns Series {main_asset}',  ytickformat=',.1%')
+    layout = style.scatter_charts_layout(title=f'Returns Series - {main_asset}',  ytickformat=',.1%')
     fig = go.Figure(traces, layout)
     fig = style.add_range_slider(fig)
     return fig
@@ -91,6 +91,6 @@ def create_returns_box_plot(data, main_asset, benchmark_asset):
     prices = data.copy()
     returns = qs.utils._prepare_returns(prices)
     traces = [go.Box(y=returns[i], name=i) for i in [main_asset, benchmark_asset]]
-    layout = style.scatter_charts_layout(title=f'Returns Quantiles -  {main_asset} vs {benchmark_asset}',  ytickformat=',.1%')
+    layout = style.scatter_charts_layout(title=f'Returns Quantiles - {main_asset} vs {benchmark_asset}',  ytickformat=',.1%')
     fig = go.Figure(traces, layout)
     return fig
