@@ -299,7 +299,7 @@ def display_compare(data, initial_amount=initial_amount, rfr=rfr, periods_per_ye
 
     return display
 
-def display_returns(prices, main_asset, benchmark_asset, round_to=2):
+def display_returns(prices, main_asset, round_to=2):
     '''
     Creates the display of returns module that includes monthly, eoy, and time series of returns.
     '''
@@ -319,7 +319,7 @@ def display_returns(prices, main_asset, benchmark_asset, round_to=2):
                     ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
 
                     dbc.Col([
-                        dcc.Graph(figure=returnsModule.create_returns_box_plot(prices, main_asset, benchmark_asset))
+                        dcc.Graph(figure=returnsModule.create_returns_box_plot(prices))
                     ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style)
 
             ],className=style.dbc_row_style)

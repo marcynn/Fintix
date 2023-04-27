@@ -1,5 +1,4 @@
 import plotly.graph_objs as go 
-import scripts.style as style
 
 # Theme
 dbc_row_style = 'border border-2 rounded m-2 p-3 border-secondary' # Used to style dbc rows
@@ -86,7 +85,7 @@ def style_table_column_by_minmax_value(df):
                 ),
                 'column_id': col
             },
-            'backgroundColor': style.main_theme_color,
+            'backgroundColor': main_theme_color,
             "fontWeight": "bold"
         })
     return styles
@@ -98,7 +97,7 @@ def scatter_charts_layout(title=None, xtickformat=None, ytickformat=None, xaxisT
     '''
     layout = go.Layout(title=dict(text=f'<b>{title}</b>',
                                     x=0.5,
-                                    font=dict(color=style.main_theme_color)),
+                                    font=dict(color=main_theme_color)),
                         font=dict(size=15),
                         height=500,
                         hoverlabel=dict(font_size=15),
@@ -118,7 +117,7 @@ def scatter_charts_layout(title=None, xtickformat=None, ytickformat=None, xaxisT
                         )
     return layout
 
-def add_range_slider(fig, rangeSlideVisible=True):
+def add_range_slider(fig, rangeSlideVisible=False):
     '''
     Adds range slider and range selector to visuals that have a datetime field.
     '''

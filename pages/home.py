@@ -245,7 +245,7 @@ def display_body(n_clicks, data, tab, all_assets, start_date, end_date, initial_
     if tab == 'compare':
         return utils.display_compare(data, initial_amount, rfr, periods_per_year)
     elif tab == 'returns':
-        return utils.display_returns(data, main_asset, benchmark_asset)
+        return utils.display_returns(data, main_asset)
     elif tab == 'benchmark':
         return utils.display_benchmark(data, main_asset, benchmark_asset, periods_per_year, rfr)
     elif tab == 'rolling':

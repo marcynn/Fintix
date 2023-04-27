@@ -87,10 +87,11 @@ def create_daily_returns_plot(data, main_asset):
     fig = style.add_range_slider(fig)
     return fig
 
-def create_returns_box_plot(data, main_asset, benchmark_asset):
+def create_returns_box_plot(data):
     prices = data.copy()
+    assets = prices.columns.to_list()
     returns = qs.utils._prepare_returns(prices)
-    traces = [go.Box(y=returns[i], name=i) for i in [main_asset, benchmark_asset]]
-    layout = style.scatter_charts_layout(title=f'Returns Quantiles - {main_asset} vs {benchmark_asset}',  ytickformat=',.1%')
+    traces = [go.Box(y=returns[i], name=i) for i in assets]
+    layout = style.scatter_charts_layout(title=f'Returns Quantiles',  ytickformat=',.1%')
     fig = go.Figure(traces, layout)
     return fig
