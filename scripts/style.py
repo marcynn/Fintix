@@ -17,13 +17,14 @@ def accounting_format(num):
 
 # Tabs style
 tabs_styles = {
-    'height': '60px'}
+    'height': '60px',}
 
 tab_style = {
     'borderBottom': '1px solid #d6d6d6',
     'padding': '6px',
     'fontWeight': 'bold',
-    'backgroundColor': secondary_theme_color}
+    'backgroundColor': secondary_theme_color,
+    }
 
 tab_selected_style = {
     'borderTop': '1px solid #d6d6d6',

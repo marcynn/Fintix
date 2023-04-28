@@ -6,6 +6,7 @@ import plotly.graph_objs as go
 import base64
 import io
 import datetime
+from dateutil.relativedelta import relativedelta
 import scripts.style as style
 import scripts.metricsTable as metricsTable
 import scripts.returnsModule as returnsModule
@@ -17,6 +18,38 @@ initial_amount = 1000
 rfr = 0.02
 periods_per_year = 252
 rolling_periods = periods_per_year // 2
+
+# Date lookback periods
+lookback_periods = ['1w', 'mtd', '3m', '6m', 'ytd', '1y', '3y', '5y','max', 'covid', '2022 rate hikes']
+
+def retrieve_date_from_lookback(data, lookback):
+
+    start_date = pd.to_datetime(data.index[0])
+    end_date = pd.to_datetime(data.index[-1])
+
+    if lookback == '1w':
+        start_date = end_date - relativedelta(weeks=1)
+    elif lookback == 'mtd':
+        start_date = datetime.datetime(end_date.year, end_date.month, 1)
+    elif lookback == '3m':
+        start_date = end_date - relativedelta(months=3)
+    elif lookback == '6m':
+        start_date = end_date - relativedelta(months=6)
+    elif lookback == 'ytd':
+        start_date = datetime.datetime(end_date.year, 1,1)
+    elif lookback == '1y':
+        start_date = end_date - relativedelta(years=1)
+    elif lookback == '3y':
+        start_date = end_date - relativedelta(years=3)
+    elif lookback == '5y':
+        start_date = end_date - relativedelta(years=5)
+    elif lookback == 'covid':
+        start_date = datetime.datetime(2020, 2, 20)
+        end_date = datetime.datetime(2020, 3, 20)
+    elif lookback == '2022 rate hikes':
+        start_date = datetime.datetime(2022,2, 28)
+        end_date = datetime.datetime(2022,12,31)
+    return start_date, end_date
 
 # Months Mapping -> Used in returns table
 months_mapping = {1:'Jan',
@@ -131,11 +164,16 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                         dbc.Row([
 
                                 dbc.Row([
-                                    html.P(children='Filter for Asset', className=style.params_p_style),
-                                    dcc.Dropdown(id='assets-dpdn',
-                                                    multi=True,
-                                                    className='text-primary')
-                                        ], className='mb-3'),
+                                    
+                                    dbc.Col([
+
+                                        html.P(children='Filter for Asset', className=style.params_p_style),
+
+                                        dcc.Dropdown(id='assets-dpdn',
+                                                        multi=True,
+                                                        )
+                                            ], className='mb-3')
+                                    ]),
 
                                 dbc.Col([
                                     html.P(children='Initial amount', className=style.params_p_style),
@@ -183,38 +221,77 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                             step=1,
                                             min=1,
                                             )
-                                ], xs=12, sm=12, md=12, lg=12, xl=6),
+                                ], xs=12, sm=12, md=12, lg=12, xl=4),
 
                                 dbc.Col([
-                                    html.P(children='Start Date', className=style.params_p_style),
 
-                                    dcc.DatePickerSingle(
-                                                id='start-date',
-                                                max_date_allowed=date,
-                                                initial_visible_month=date,
-                                                date=date,
-                                        ),
+                                    dbc.Row([
 
-                                    html.P(children='End Date', className=style.params_p_style),
+                                        dbc.Col([
 
-                                    dcc.DatePickerSingle(
-                                        id='end-date',
-                                        max_date_allowed=date,
-                                        initial_visible_month=date,
-                                        date=date),
+                                            html.P(children='Start Date', className=style.params_p_style),
 
-                                    html.P(children='Main', className=style.params_p_style),
+                                            dcc.DatePickerSingle(
+                                                        id='start-date',
+                                                        max_date_allowed=date,
+                                                        initial_visible_month=date,
+                                                        date=date,
+                                                    ),
+                                                ],xs=12, sm=12, md=12, lg=6, xl=6),
+                                            
+                                            dbc.Tooltip(
+                                                "To change manually, please pick 'max' as your lookback first. ",
+                                                target="start-date",
+                                                placement='top',
+                                                ),
+                                            
+                                        dbc.Col([
 
-                                    dcc.Dropdown(id='main-asset',
-                                            value = '',
-                                            ),
+                                            html.P(children='End Date', className=style.params_p_style),
 
-                                    html.P(children='Benchmark', className=style.params_p_style),
+                                            dcc.DatePickerSingle(
+                                                        id='end-date',
+                                                        max_date_allowed=date,
+                                                        initial_visible_month=date,
+                                                        date=date
+                                                    ),
+                                                ],xs=12, sm=12, md=12, lg=6, xl=6)
+                                        ]),
 
-                                    dcc.Dropdown(id='benchmark-asset',
-                                            value = '',
-                                            ),
-                            ],xs=12, sm=12, md=12, lg=12, xl=6),
+                                    dbc.Row([
+
+                                        dbc.Col([
+
+                                                html.P(children='Main', className=style.params_p_style),
+
+                                                dcc.Dropdown(id='main-asset',
+                                                        value = '',
+                                                        ),
+                                                ],xs=12, sm=12, md=12, lg=6, xl=6),
+
+                                        dbc.Col([
+
+                                                html.P(children='Benchmark', className=style.params_p_style),
+
+                                                dcc.Dropdown(id='benchmark-asset',
+                                                        value = '',
+                                                        ),
+                                                ],xs=12, sm=12, md=12, lg=6, xl=6),
+                                        ]),
+
+                                        dbc.Row([
+
+                                            dbc.Col([
+
+                                                html.P(children='Lookback Period', className=style.params_p_style ),
+
+                                                dcc.Dropdown(id='lookback-dpdn',
+                                                            options=[{'label':i, 'value':i} for i in lookback_periods],
+                                                            value='max')
+                                            ],xs=12, sm=12, md=12, lg=6, xl=6)
+                                        ])
+
+                            ],xs=12, sm=12, md=12, lg=12, xl=8),
 
                             dbc.Row([
 
@@ -232,22 +309,25 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                         ], className=style.dbc_row_style),
 
                         dbc.Row([
-                                dcc.Tabs(id='menu-tabs', value='compare', children=[
-                                    dcc.Tab(label='Compare', value='compare', style=style.tab_style, selected_style=style.tab_selected_style),
-                                    dcc.Tab(label='Returns', value='returns', style=style.tab_style, selected_style=style.tab_selected_style),
-                                    dcc.Tab(id='benchmark-tab', label='Benchmark', value='benchmark', style=style.tab_style, selected_style=style.tab_selected_style),
-                                    dcc.Tab(id='rolling-tab', label='Rolling', value='rolling', style=style.tab_style, selected_style=style.tab_selected_style),
+
+                                html.P(children='Pick Module', className=style.params_p_style + ' text-center'),
+                                
+                                dcc.Tabs(id='menu-tabs', 
+                                        value='compare',
+                                        children=[
+                                            dcc.Tab(label='Compare', value='compare', style=style.tab_style, selected_style=style.tab_selected_style),
+                                            dcc.Tab(label='Returns', value='returns', style=style.tab_style, selected_style=style.tab_selected_style),
+                                            dcc.Tab(id='benchmark-tab', label='Benchmark', value='benchmark', style=style.tab_style, selected_style=style.tab_selected_style),
+                                            dcc.Tab(id='rolling-tab', label='Rolling', value='rolling', style=style.tab_style, selected_style=style.tab_selected_style),
 
                             ]), dbc.Tooltip(
-                                        "Adjust main and benchmark params to your liking. "
-                                        ,
+                                        "Adjust main and benchmark params to your liking. ",
                                         target="benchmark-tab",
                                         placement='bottom'
                                         ),
 
                                 dbc.Tooltip(
-                                        "Adjust rolling periods param to the appropriate timeframe. "
-                                        ,
+                                        "Adjust rolling periods param to the appropriate timeframe. ",
                                         target="rolling-tab",
                                         placement='bottom'
                                         ),

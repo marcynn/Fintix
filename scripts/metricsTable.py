@@ -1,13 +1,12 @@
 import pandas as pd
 import numpy as np
 import quantstats as qs
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 from dash import dash_table
 from collections import OrderedDict
 from dash.dash_table import FormatTemplate
 from dash.dash_table.Format import Format, Scheme
 import scripts.style as style
+import scripts.utils as utils
 
 def create_metrics_table(data, periods_per_year, rfr, round_to=2):
     prices = data.copy()
@@ -17,14 +16,14 @@ def create_metrics_table(data, periods_per_year, rfr, round_to=2):
 
     # Setup dates lookback
     last_date = prices.index[-1]
-    week_date = last_date - relativedelta(weeks=1)
-    mtd_date = datetime(last_date.year, last_date.month, 1)
-    m3_date = last_date - relativedelta(months=3)
-    m6_date = last_date - relativedelta(months=6)
-    ytd_date = datetime(last_date.year, 1,1)
-    y1_date = last_date - relativedelta(years=1)
-    y3_date = last_date - relativedelta(years=3)
-    y5_date = last_date - relativedelta(years=5)
+    week_date, _ = utils.retrieve_date_from_lookback(data, '1w')
+    mtd_date, _ = utils.retrieve_date_from_lookback(data, 'mtd')
+    m3_date, _ = utils.retrieve_date_from_lookback(data, '3m')
+    m6_date, _ = utils.retrieve_date_from_lookback(data, '6m')
+    ytd_date, _ = utils.retrieve_date_from_lookback(data, 'ytd')
+    y1_date, _ = utils.retrieve_date_from_lookback(data, '1y')
+    y3_date, _ = utils.retrieve_date_from_lookback(data, '3y')
+    y5_date, _ = utils.retrieve_date_from_lookback(data, '5y')
 
     data = OrderedDict(
         [

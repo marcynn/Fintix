@@ -180,12 +180,23 @@ def display_params(n_clicks):
             Output('start-date','max_date_allowed'),
             Output('end-date','min_date_allowed'),
             Output('end-date','max_date_allowed'),
-            [Input('stored-data','data')])
-def update_date_picker(data):
+            Output('start-date','disabled'),
+            Output('end-date','disabled'),
+            [Input('stored-data','data'),
+            Input('lookback-dpdn', 'value')
+            ])
+def update_date_picker(data, lookback):
     data = utils.json_to_df(data)
-    min_date = data.index.min()
-    max_date = data.index.max()
-    return min_date, max_date, min_date, max_date-timedelta(7), min_date+timedelta(7), max_date
+    min_date, max_date = utils.retrieve_date_from_lookback(data, lookback)
+
+    disable_start_date = True
+    disable_end_date = True
+
+    if lookback == 'max':
+        disable_start_date = False
+        disable_end_date = False
+        
+    return min_date, max_date, min_date, max_date-timedelta(7), min_date+timedelta(7), max_date, disable_start_date, disable_end_date
 
 # Update assets filter dropdown
 @callback(Output('assets-dpdn','options'),
@@ -230,9 +241,11 @@ def update_main_bench_dropdowns(filtered_assets):
             State('main-asset','value'),
             State('benchmark-asset','value'),
             ])
-def display_body(n_clicks, data, tab, all_assets, start_date, end_date, initial_amount, rfr, periods_per_year, rolling_periods, main_asset, benchmark_asset):
+def display_body(n_clicks, data, menu,  all_assets, start_date, end_date, initial_amount, rfr, periods_per_year, rolling_periods, main_asset, benchmark_asset):
+
     data = utils.json_to_df(data)
-    if n_clicks >= 1: # This means that we want to initialize the  with all assets at first. 
+
+    if n_clicks >= 1: # This means that we want to initialize the dashboard with all assets at first. 
         try:
             data = data.loc[start_date:end_date] # Filter for start and end dates from date picker.
         except:
@@ -242,11 +255,11 @@ def display_body(n_clicks, data, tab, all_assets, start_date, end_date, initial_
         except:
             print(f"Couldn't filter for assets.")
 
-    if tab == 'compare':
+    if menu == 'compare':
         return utils.display_compare(data, initial_amount, rfr, periods_per_year)
-    elif tab == 'returns':
+    elif menu == 'returns':
         return utils.display_returns(data, main_asset)
-    elif tab == 'benchmark':
+    elif menu == 'benchmark':
         return utils.display_benchmark(data, main_asset, benchmark_asset, periods_per_year, rfr)
-    elif tab == 'rolling':
+    elif menu == 'rolling':
         return utils.display_rolling(data, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year)
