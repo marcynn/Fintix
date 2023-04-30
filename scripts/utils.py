@@ -68,7 +68,7 @@ months_mapping = {1:'Jan',
 # Handle stored data parsing
 def json_to_df(data):
         '''
-        Transform data from JSON to PDF.
+        Transforms data from JSON to PDF.
         Modify this function to accomodate for different data sources that have a slightly different data frame shape --> (No date index, date column not named 'Date', etc.)
         '''
         data = pd.DataFrame(data).dropna()
@@ -87,7 +87,7 @@ def json_to_df(data):
 #------------------- Data Load-------------------
 def parse_content(contents, filename):
     '''
-    Parses the content of an uploaded Excel file.
+    Parses the content of an uploaded csv file.
     '''
     content_type, content_string = contents.split(',')
 
@@ -107,10 +107,9 @@ def parse_content(contents, filename):
 
 def display_uploaded_file(contents, filename, date):
     '''
-    Display table of an uploaded Excel file.
+    Display table of an uploaded csv file.
     '''
     df = parse_content(contents, filename)
-    assets = df.set_index('Date').columns.to_list()
 
     display = html.Div([
 
@@ -310,31 +309,6 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                             ]),
 
                         ], className=style.dbc_row_style),
-
-                        dbc.Row([
-
-                                html.P(children='Pick Module', className=style.params_p_style + ' text-center'),
-                                
-                                dcc.Tabs(id='menu-tabs', 
-                                        value='compare',
-                                        children=[
-                                            dcc.Tab(label='Compare', value='compare', style=style.tab_style, selected_style=style.tab_selected_style),
-                                            dcc.Tab(label='Returns', value='returns', style=style.tab_style, selected_style=style.tab_selected_style),
-                                            dcc.Tab(id='benchmark-tab', label='Benchmark', value='benchmark', style=style.tab_style, selected_style=style.tab_selected_style),
-                                            dcc.Tab(id='rolling-tab', label='Rolling', value='rolling', style=style.tab_style, selected_style=style.tab_selected_style),
-
-                            ]), dbc.Tooltip(
-                                        "Adjust main and benchmark params to your liking. ",
-                                        target="benchmark-tab",
-                                        placement='bottom'
-                                        ),
-
-                                dbc.Tooltip(
-                                        "Adjust rolling periods param to the appropriate timeframe. ",
-                                        target="rolling-tab",
-                                        placement='bottom'
-                                        ),
-                        ], className='mt-3'),
                 ])
 
     return display
@@ -395,30 +369,12 @@ def retrieve_all_summary_texts(prices, rfr=rfr, periods_per_year=periods_per_yea
     '''
     all_texts = [retrieve_summary_text(prices, lookback, rfr, periods_per_year) for lookback in lookback_periods]
 
-    display = html.Div(id='all-summary-texts',
-    
-                        children=
-                                dbc.Row([
+    display = dbc.Row([
 
-                                    dbc.Button('TL;DA', 
-                                                id='summary-collapse-btn',
-                                                className="mb-3",
-                                                color="primary",
-                                                n_clicks=0),
-
-                                    dbc.Collapse(
-
-                                        dbc.Row(
-                                            [html.P("TL;DA - Too Long, Didn't Analyze", className=style.params_p_style)] +
-
-                                            [dbc.Col(i, 
-                                                className=style.dbc_col_style + ' border-warning p-2 m-1',
-                                                xs=12, sm=12, md=12, lg=2, xl=2) for i in all_texts]), 
-
-                                            id='summary-collapse')
-
-                                ], className=style.dbc_row_style)
-                            )
+                dbc.Col(i, 
+                        className=style.dbc_col_style + ' border-warning p-2 m-1',
+                        xs=12, sm=12, md=12, lg=2, xl=2) for i in all_texts
+                    ])
     return display
 
 def display_compare(prices, initial_amount=initial_amount, rfr=rfr, periods_per_year=periods_per_year):
@@ -458,8 +414,7 @@ def display_compare(prices, initial_amount=initial_amount, rfr=rfr, periods_per_
                     dbc.Col([
                         dcc.Graph(figure=drawdown_fig)
                     ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
-
-    ], className=style.dbc_row_style)
+    ])
 
     return display
 
@@ -485,8 +440,7 @@ def display_returns(prices, main_asset, round_to=2):
                     dbc.Col([
                         dcc.Graph(figure=returnsModule.create_returns_box_plot(prices))
                     ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style)
-
-            ],className=style.dbc_row_style)
+            ])
 
     return display
 
@@ -515,7 +469,7 @@ def display_benchmark(prices, main_asset, benchmark_asset, periods_per_year=peri
                     dcc.Graph(figure=benchmarkModule.create_correlation_heatmap(prices))
                 ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style)
 
-            ], className=style.dbc_row_style)
+            ])
 
     return display
 
@@ -527,28 +481,107 @@ def display_rolling(prices, main_asset, benchmark_asset, rolling_periods, rfr, p
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Alpha"))
-                    ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Beta"))
-                    ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Sharpe"))
-                    ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Sortino"))
-                    ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Volatility"))
-                    ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
 
                     dbc.Col([
                         dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Correlation"))
-                    ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style)
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style)
+        ])
 
-        ], className=style.dbc_row_style)
+    return display
 
+def display_body(prices, main_asset, benchmark_asset, initial_amount=initial_amount, rfr=rfr, periods_per_year=periods_per_year, rolling_periods=rolling_periods):
+    '''
+    Combines all the modules (compare, returns, etc.) in a single display.
+    '''
+    display = html.Div(
+                        children=
+                                dbc.Row([    
+
+                                    dbc.Button("TL;DA - Too Long; Didn't Analyze", 
+                                                id='summary-collapse-btn',
+                                                className=style.collapse_btn_style,
+                                                n_clicks=0),
+                                    dbc.Col([
+                                        dbc.Collapse(
+                                                
+                                                retrieve_all_summary_texts(prices, rfr, periods_per_year),
+                                                id='summary-collapse',
+                                                is_open=True),
+
+                                    ],xs=12, sm=12, md=12, lg=12, xl=12),
+
+                                    dbc.Button('Compare', 
+                                                id='compare-collapse-btn',
+                                                className=style.collapse_btn_style,
+                                                n_clicks=0),
+                                    dbc.Col([
+                                        dbc.Collapse(
+
+                                                display_compare(prices, initial_amount, rfr=rfr, periods_per_year=periods_per_year),
+                                                id='compare-collapse',
+                                                is_open=True),
+
+                                    ],xs=12, sm=12, md=12, lg=12, xl=12),
+
+                                    dbc.Button('Returns', 
+                                                id='returns-collapse-btn',
+                                                className=style.collapse_btn_style,
+                                                n_clicks=0),
+                                    dbc.Col([
+                                        dbc.Collapse(
+
+                                                display_returns(prices, main_asset, 2),
+                                                id='returns-collapse',
+                                                is_open=True),
+
+                                    ],xs=12, sm=12, md=12, lg=12, xl=12),
+
+                                    dbc.Button('Benchmark', 
+                                                id='benchmark-collapse-btn',
+                                                className=style.collapse_btn_style,
+                                                n_clicks=0),
+
+                                    dbc.Col([
+                                        dbc.Collapse(
+
+                                                display_benchmark(prices, main_asset, benchmark_asset, periods_per_year, rfr),
+                                                id='benchmark-collapse',
+                                                is_open=True)
+
+                                    ],xs=12, sm=12, md=12, lg=12, xl=12),
+
+                                    
+                                    dbc.Button('Rolling', 
+                                                id='rolling-collapse-btn',
+                                                className=style.collapse_btn_style,
+                                                n_clicks=0),
+
+                                    dbc.Col([
+                                        dbc.Collapse(
+
+                                                display_rolling(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year),
+                                                id='rolling-collapse',
+                                                is_open=True)
+
+                                    ],xs=12, sm=12, md=12, lg=12, xl=12)
+                                    
+                                ], className=style.dbc_row_style)
+                            )
     return display

@@ -1,3 +1,7 @@
+*{
+    font-family: monospace;
+}
+
 /* Dropdown */
 .Select-control {
     background-color: rgb(25, 25, 25) !important;
@@ -33,4 +37,5 @@ input {
 .DateInput_input { 
     background: rgb(25, 25, 25);
     color: white; 
+    font-size: small;
 } 

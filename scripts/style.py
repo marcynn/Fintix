@@ -1,10 +1,11 @@
 import plotly.graph_objs as go 
 
 # Theme
-dbc_row_style = 'border border-2 rounded m-2 p-3 border-secondary' # Used to style dbc rows
+dbc_row_style = 'border border-2 rounded m-2 p-2 border-secondary' # Used to style dbc rows
 dbc_col_style = 'border border-2 rounded border-secondary mt-4'
-params_p_style = 'mb-2 mt-2 text-warning'# Used to style the text of parameter name
-h5_style = 'm-4 text-warning fw-bold text-center' # Used to style H5
+params_p_style = 'mb-2 mt-2 text-warning' # Used to style the text of parameter name
+collapse_btn_style = 'btn-warning mt-4 mb-2 text-light fw-bold fs-4'
+h5_style = 'm-4 text-warning fw-bold text-center' # Used to style H5 
 green = '#02aa3e'
 red = '#FF0000'
 chart_templates = 'plotly_dark'
