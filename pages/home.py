@@ -19,57 +19,52 @@ header = dbc.Row([
                 html.H3('Analytics at your fingertips. One sheet at a time.',  
                         className='text-center text-warning'
                         )
-                    ], xs=12, sm=12, md=12, lg=12, xl=12),
+                    ],xs=12, sm=12, md=12, lg=12, xl=12),
         ], className=style.dbc_row_style)
 
 upload_file = dbc.Row([
-                    dbc.Col(id='upload-data-col',
-                    children=[
-                        dcc.Upload(
-                            id='upload-data',
-                            children=html.Div(['Drag and Drop or ',
-                                                html.A('Select Files'), 
-                                                ]),
-                            style={
-                                'width': '100%',
-                                'height': '60px',
-                                'lineHeight': '60px',
-                                'borderWidth': '1px',
-                                'borderStyle': 'dashed',
-                                'borderRadius': '5px',
-                                'textAlign': 'center',
-                                'margin': '10px',
-                            },
-                            # Allow multiple files to be uploaded
-                            multiple=True),
-
-                            dbc.Tooltip(
-                                "Upload .csv file based on the data template. "
-                                "Format is 'Date' as first column, followed by your choice of assets such as 'Asset1', 'Asset2', etc. ",
-                                target="upload-data",
-                            ),
-                        
-                        dbc.Spinner(
-                            children=[html.Div(id='output-datatable')], 
-                            size="lg", 
-                            color="primary", 
-                            type="border", 
-                            fullscreen=False),
-
-                    ],xs=12, sm=12, md=12, lg=6, xl=6),
-                    
                     dbc.Col([
-                        
                         dbc.Row([
+                            # Upload field
+                            dbc.Col(
+                                id='upload-data-col',
+                                children=[
+                                    dcc.Upload(
+                                        id='upload-data',
+                                        children=html.Div(['Drag and Drop or ',
+                                                            html.A('Select Files'), 
+                                                            ]),
+                                        style={
+                                            'width': '100%',
+                                            'height': '60px',
+                                            'lineHeight': '60px',
+                                            'borderWidth': '1px',
+                                            'borderStyle': 'dashed',
+                                            'borderRadius': '5px',
+                                            'textAlign': 'center',
+                                            'margin': '10px',
+                                        },
+                                        # Allow multiple files to be uploaded
+                                        multiple=True),
 
+                                        dbc.Tooltip(
+                                            "Upload .csv file based on the data template. "
+                                            "Format is 'Date' as first column, followed by your choice of assets such as 'Asset1', 'Asset2', etc. ",
+                                            target="upload-data",
+                                            placement='left')
+
+                                ],xs=12, sm=12, md=12, lg=8, xl=8
+                            ),
+
+                            # Download data-sample button 
                             dbc.Col([
-
-                                # Download data-sample button 
-                                dbc.Button("Download CSV Template", id="btn_csv", className='m-2', size='sm', color='primary', n_clicks=0),
+                                dbc.Button("Download CSV Template", id="btn_csv", className='mt-3', size='sm', color='primary', n_clicks=0),
                                 dcc.Download(id="download-dataframe-csv"),
-            
-                                # Download data from yfinance modal
-                                dbc.Button("Download Yahoo Data", id="open-modal-btn", className='m-2', size='sm', color='primary', n_clicks=0),
+                            ],xs=12, sm=12, md=12, lg=2, xl=2),
+
+                            # Download data from yfinance modal
+                            dbc.Col([
+                                dbc.Button("Download Yahoo Data", id="open-modal-btn", className='mt-3', size='sm', color='primary', n_clicks=0),
                                 dbc.Modal(
                                     [
                                         dbc.ModalHeader(dbc.ModalTitle("Download asset prices from Yahoo Finance"), className='text-center'),
@@ -90,19 +85,33 @@ upload_file = dbc.Row([
                                     id="modal",
                                     is_open=False,
                                     )
-                            ], width={'offset':6})
+                            ],xs=12, sm=12, md=12, lg=2, xl=2)
+
                         ]),
-                        
-                        # Parameters spinner + div
+
+                        # Data table
+                        dbc.Row([
+                            dbc.Spinner(
+                            children=[html.Div(id='output-datatable', className='mt-3')], 
+                            size="lg", 
+                            color="primary", 
+                            type="border", 
+                            fullscreen=False),
+                        ])
+
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className='p-5'),
+
+                    # Parameters spinner + div
+                    dbc.Col([
                         dbc.Spinner(children=[html.Div(id='params')], 
                                 size="lg", 
                                 color="primary", 
                                 type="border", 
                                 fullscreen=False),
-            
-                        ],xs=12, sm=12, md=12, lg=6, xl=6),
-                
-                ], className=style.dbc_row_style)
+
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className='p-5')
+                    
+    ], className=style.dbc_row_style)
 
 layout = dbc.Container([
     header,

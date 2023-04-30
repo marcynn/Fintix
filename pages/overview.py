@@ -194,7 +194,7 @@ layout = dbc.Container([
                             html.Div(id='factor-performance-table', children=create_performance_table(prices, 'factors'))
                         ])
 
-                    ], className=style.dbc_row_style),
+                    ], className='m-2 mb-4'),
 
 ], fluid=True)
 

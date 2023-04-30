@@ -308,7 +308,7 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
                                 ],xs=12, sm=12, md=12, lg=12, xl=6)
                             ]),
 
-                        ], className=style.dbc_row_style),
+                        ]),
                 ])
 
     return display
