@@ -20,7 +20,7 @@ periods_per_year = 252
 rolling_periods = periods_per_year // 2
 
 # Date lookback periods
-lookback_periods = ['1w', 'mtd', '3m', '6m', 'ytd', '1y', '3y', '5y','max', 'covid', '2022 rate hikes']
+lookback_periods = ['1w', 'mtd', '3m', '6m', 'ytd', '1y', '3y', '5y','max', 'covid crash', '2022 rate hikes']
 
 def retrieve_date_from_lookback(data, lookback):
 
@@ -43,7 +43,7 @@ def retrieve_date_from_lookback(data, lookback):
         start_date = end_date - relativedelta(years=3)
     elif lookback == '5y':
         start_date = end_date - relativedelta(years=5)
-    elif lookback == 'covid':
+    elif lookback == 'covid crash':
         start_date = datetime.datetime(2020, 2, 20)
         end_date = datetime.datetime(2020, 3, 20)
     elif lookback == '2022 rate hikes':
@@ -287,7 +287,10 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
 
                                                 dcc.Dropdown(id='lookback-dpdn',
                                                             options=[{'label':i, 'value':i} for i in lookback_periods],
-                                                            value='max')
+                                                            value='max'),
+
+                                                html.P(id='date-validation-p', className='text-danger mt-2')
+
                                             ],xs=12, sm=12, md=12, lg=6, xl=6)
                                         ])
 

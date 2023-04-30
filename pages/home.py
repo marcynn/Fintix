@@ -182,12 +182,15 @@ def display_params(n_clicks):
             Output('end-date','max_date_allowed'),
             Output('start-date','disabled'),
             Output('end-date','disabled'),
+            Output('date-validation-p', 'children'),
             [Input('stored-data','data'),
             Input('lookback-dpdn', 'value')
             ])
 def update_date_picker(data, lookback):
     data = utils.json_to_df(data)
-    min_date, max_date = utils.retrieve_date_from_lookback(data, lookback)
+    min_date = data.index[0]
+    max_date = data.index[-1]
+    start_date, end_date = utils.retrieve_date_from_lookback(data, lookback)
 
     disable_start_date = True
     disable_end_date = True
@@ -195,8 +198,13 @@ def update_date_picker(data, lookback):
     if lookback == 'max':
         disable_start_date = False
         disable_end_date = False
+    
+    if start_date < min_date or end_date > max_date:
+        date_validation = 'Lookback period is not within the date range of loaded data.'
+    else:
+        date_validation = None
         
-    return min_date, max_date, min_date, max_date-timedelta(7), min_date+timedelta(7), max_date, disable_start_date, disable_end_date
+    return start_date, end_date, min_date, max_date-timedelta(7), min_date+timedelta(7), max_date, disable_start_date, disable_end_date, date_validation
 
 # Update assets filter dropdown
 @callback(Output('assets-dpdn','options'),
