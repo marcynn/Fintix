@@ -339,12 +339,93 @@ def create_params(initial_amount=initial_amount, rfr=rfr, periods_per_year=perio
 
     return display
 
-def display_compare(data, initial_amount=initial_amount, rfr=rfr, periods_per_year=periods_per_year):
+def retrieve_summary_text(prices, lookback, rfr=rfr, periods_per_year=periods_per_year):
+    '''
+    Retrieves summary text containing a brief summary of top / worst performances for a given lookback period.
+    '''
+    try:
+        start_date, end_date = retrieve_date_from_lookback(prices, lookback)
+        prices = prices.loc[start_date:end_date]
+        returns = qs.utils._prepare_returns(prices)
+
+        start_date = str(prices.index[0])[:10]
+        end_date = str(prices.index[-1])[:10]
+        comp = qs.stats.comp(returns)
+        max_return = round(comp.max() * 100 , 2)
+        min_return = round(comp.min() * 100 , 2)
+
+        sharpe_ratio = round(qs.stats.sharpe(returns, rf=rfr, periods=periods_per_year, annualize=True),2)
+        volatility = round(qs.stats.volatility(returns, periods=periods_per_year, annualize=True)*100, 2)
+
+        display = html.Div(
+                            children=
+                                    dcc.Markdown(
+                                        f'''
+                                        ###### Best {comp.idxmax()} {volatility.idxmin()} {sharpe_ratio.idxmax()}
+
+                                        **{lookback.upper()}** period - {start_date} to {end_date}:
+
+                                        * **Performance**: 
+                                        {comp.idxmax()} best at {max_return}%. 
+                                        {comp.idxmin()} worst at {min_return}%.
+
+                                        * **Volatility**: 
+                                        {volatility.idxmin()} best at {volatility.min()}%.
+                                        {volatility.idxmax()} worst at {volatility.max()}%.
+
+                                        * **Risk-adjusted Performance (Sharpe)**: 
+                                        {sharpe_ratio.idxmax()} best at {sharpe_ratio.max()}.
+                                        {sharpe_ratio.idxmin()} worst at {sharpe_ratio.min()}.
+                                        '''
+                                    )
+                            )
+    except:
+        display = html.Div(children=
+                                    dcc.Markdown(
+                                        f'''
+                                        Couldn't retrieve summary for **{lookback.upper()}** period.
+                                        '''
+                                    )
+                                )
+    return display
+
+def retrieve_all_summary_texts(prices, rfr=rfr, periods_per_year=periods_per_year):
+    '''
+    Retrieves all summary texts for a list of lookbacks.
+    '''
+    all_texts = [retrieve_summary_text(prices, lookback, rfr, periods_per_year) for lookback in lookback_periods]
+
+    display = html.Div(id='all-summary-texts',
+    
+                        children=
+                                dbc.Row([
+
+                                    dbc.Button('TL;DA', 
+                                                id='summary-collapse-btn',
+                                                className="mb-3",
+                                                color="primary",
+                                                n_clicks=0),
+
+                                    dbc.Collapse(
+
+                                        dbc.Row(
+                                            [html.P("TL;DA - Too Long, Didn't Analyze", className=style.params_p_style)] +
+
+                                            [dbc.Col(i, 
+                                                className=style.dbc_col_style + ' border-warning p-2 m-1',
+                                                xs=12, sm=12, md=12, lg=2, xl=2) for i in all_texts]), 
+
+                                            id='summary-collapse')
+
+                                ], className=style.dbc_row_style)
+                            )
+    return display
+
+def display_compare(prices, initial_amount=initial_amount, rfr=rfr, periods_per_year=periods_per_year):
     '''
     Creates the display of compare module that includes index performance, drawdown, and metrics table.
     '''
     # Setup data
-    prices = data.copy()
     assets = prices.columns.to_list()
     returns = qs.utils._prepare_returns(prices)
     # Create index evolution

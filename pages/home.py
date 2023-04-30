@@ -107,12 +107,12 @@ upload_file = dbc.Row([
 layout = dbc.Container([
     header,
     upload_file,
+    html.Div(id='all-summary-texts'),
     dbc.Spinner(children=[html.Div(id='body')], 
                 size="lg", 
                 color="primary", 
                 type="border", 
                 fullscreen=False),
-    
 ], fluid=True)
 
 #-------------------Callbacks-------------------
@@ -234,6 +234,26 @@ def update_main_bench_dropdowns(filtered_assets):
     options = [{'label':i, 'value':i} for i in filtered_assets]
     return options, options, main_asset, benchmark_asset
 
+# Update summary text
+@callback(Output('all-summary-texts','children'),
+        [Input('apply-changes-btn','n_clicks'),
+        Input('stored-data','data')],
+        [State('rfr','value'),
+        State('periods-per-year','value')])
+def func(n_clicks, data, rfr, periods_per_year):
+    data = utils.json_to_df(data)
+    return utils.retrieve_all_summary_texts(data, rfr, periods_per_year)
+
+# Summary text collapse callabck
+@callback(
+    Output("summary-collapse", "is_open"),
+    [Input("summary-collapse-btn", "n_clicks")],
+    [State("summary-collapse", "is_open")])
+def toggle_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
 # Update body
 @callback(Output('body','children'),
             [Input('apply-changes-btn', 'n_clicks'),
@@ -249,7 +269,7 @@ def update_main_bench_dropdowns(filtered_assets):
             State('main-asset','value'),
             State('benchmark-asset','value'),
             ])
-def display_body(n_clicks, data, menu,  all_assets, start_date, end_date, initial_amount, rfr, periods_per_year, rolling_periods, main_asset, benchmark_asset):
+def display_body(n_clicks, data, menu, all_assets, start_date, end_date, initial_amount, rfr, periods_per_year, rolling_periods, main_asset, benchmark_asset):
 
     data = utils.json_to_df(data)
 
@@ -264,10 +284,12 @@ def display_body(n_clicks, data, menu,  all_assets, start_date, end_date, initia
             print(f"Couldn't filter for assets.")
 
     if menu == 'compare':
-        return utils.display_compare(data, initial_amount, rfr, periods_per_year)
+        body =  utils.display_compare(data, initial_amount, rfr, periods_per_year)
     elif menu == 'returns':
-        return utils.display_returns(data, main_asset)
+        body = utils.display_returns(data, main_asset)
     elif menu == 'benchmark':
-        return utils.display_benchmark(data, main_asset, benchmark_asset, periods_per_year, rfr)
+        body = utils.display_benchmark(data, main_asset, benchmark_asset, periods_per_year, rfr)
     elif menu == 'rolling':
-        return utils.display_rolling(data, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year)
+        body = utils.display_rolling(data, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year)
+
+    return body
