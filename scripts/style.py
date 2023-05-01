@@ -4,7 +4,6 @@ import plotly.graph_objs as go
 dbc_row_style = 'border border-2 rounded m-2 p-2 border-secondary' # Used to style dbc rows
 dbc_col_style = 'border border-2 rounded border-secondary mt-4'
 params_p_style = 'mb-2 mt-2 text-warning' # Used to style the text of parameter name
-collapse_btn_style = 'btn-warning mt-4 mb-2 text-light fw-bold fs-4'
 h5_style = 'm-4 text-warning fw-bold text-center' # Used to style H5 
 green = '#02aa3e'
 red = '#FF0000'
@@ -25,6 +24,7 @@ tab_style = {
     'padding': '6px',
     'fontWeight': 'bold',
     'backgroundColor': secondary_theme_color,
+    'font-size':'x-large'
     }
 
 tab_selected_style = {
@@ -32,6 +32,7 @@ tab_selected_style = {
     'borderBottom': '1px solid #d6d6d6',
     'backgroundColor': main_theme_color,
     'color': secondary_theme_color,
+    'font-size':'x-large',
     'padding': '6px'}
 
 # Table style 

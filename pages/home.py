@@ -109,7 +109,10 @@ upload_file = dbc.Row([
                                 type="border", 
                                 fullscreen=False),
 
-                    ],xs=12, sm=12, md=12, lg=6, xl=6, className='p-5')
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className='p-5'),
+
+                    # Menu tabs
+                    html.Div(id='menu-tabs-div')
                     
     ], className=style.dbc_row_style)
 
@@ -175,11 +178,12 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
 # Display parameters
 @callback(Output('params','children'),
             Output('submit-btn','color'),
+            Output('menu-tabs-div', 'children'),
             [Input('submit-btn','n_clicks')])
 def display_params(n_clicks):
     if n_clicks >= 1:
         params =  utils.create_params()
-        return params, 'success'
+        return params, 'success', utils.display_tabs()
 
 # Update date picker to relevant dates
 @callback(Output('start-date','date'),
@@ -242,71 +246,22 @@ def update_main_bench_dropdowns(filtered_assets):
     options = [{'label':i, 'value':i} for i in filtered_assets]
     return options, options, main_asset, benchmark_asset
 
-# Summary text collapse
-@callback(
-    Output("summary-collapse", "is_open"),
-    [Input("summary-collapse-btn", "n_clicks")],
-    [State("summary-collapse", "is_open")])
-def toggle_summary_collapse(n, is_open):
-    if n:
-        return not is_open
-    return is_open
-
-# Compare collapse
-@callback(
-    Output("compare-collapse", "is_open"),
-    [Input("compare-collapse-btn", "n_clicks")],
-    [State("compare-collapse", "is_open")])
-def toggle_compare_collapse(n, is_open):
-    if n:
-        return not is_open
-    return is_open
-    
-# Returns collapse
-@callback(
-    Output("returns-collapse", "is_open"),
-    [Input("returns-collapse-btn", "n_clicks")],
-    [State("returns-collapse", "is_open")])
-def toggle_returns_collapse(n, is_open):
-    if n:
-        return not is_open
-    return is_open
-
-# Benchmark collapse
-@callback(
-    Output("benchmark-collapse", "is_open"),
-    [Input("benchmark-collapse-btn", "n_clicks")],
-    [State("benchmark-collapse", "is_open")])
-def toggle_benchmark_collapse(n, is_open):
-    if n:
-        return not is_open
-    return is_open
-
-# Rolling collapse
-@callback(
-    Output("rolling-collapse", "is_open"),
-    [Input("rolling-collapse-btn", "n_clicks")],
-    [State("rolling-collapse", "is_open")])
-def toggle_rolling_collapse(n, is_open):
-    if n:
-        return not is_open
-    return is_open
-
 # Update body
 @callback(Output('body','children'),
-        [Input('apply-changes-btn','n_clicks'),
-        Input('stored-data','data')],
-        [State('assets-dpdn', 'value'),
-        State('start-date','date'),
-        State('end-date','date'),
-        State('main-asset','value'),
-        State('benchmark-asset','value'),
-        State('initial-amount','value'),
-        State('rfr','value'),
-        State('periods-per-year','value'),
-        State('rolling-periods','value'),
-        ])
-def func(n_clicks, data, all_assets, start_date, end_date, main_asset, benchmark_asset, initial_amount, rfr, periods_per_year, rolling_periods):
+            [Input('apply-changes-btn', 'n_clicks'),
+            Input('stored-data','data'),
+            Input('menu-tabs','value')],
+            [State('assets-dpdn', 'value'),
+            State('start-date','date'),
+            State('end-date','date'),
+            State('initial-amount','value'),
+            State('rfr','value'),
+            State('periods-per-year','value'),
+            State('rolling-periods','value'),
+            State('main-asset','value'),
+            State('benchmark-asset','value'),
+            ])
+def display_body(n_clicks, data, menu, assets, start_date, end_date, initial_amount, rfr, periods_per_year, rolling_periods, main_asset, benchmark_asset):
     data = utils.json_to_df(data)
     if n_clicks >= 1:
         try:
@@ -314,9 +269,19 @@ def func(n_clicks, data, all_assets, start_date, end_date, main_asset, benchmark
         except:
             print(f"Couldn't filter for date.")
         try:
-            data = data[all_assets] # Filter for selected assets from dropdown.
+            data = data[assets] # Filter for selected assets from dropdown.
         except:
             print(f"Couldn't filter for assets.")
 
-    return utils.display_body(data, main_asset, benchmark_asset, initial_amount, rfr, periods_per_year, rolling_periods)
+    if menu == 'tlda':
+        return utils.retrieve_all_summary_texts(data, rfr, periods_per_year)
+    elif menu == 'compare':
+        return utils.display_compare(data, initial_amount, rfr, periods_per_year)
+    elif menu == 'returns':
+        return utils.display_returns(data, main_asset)
+    elif menu == 'benchmark':
+        return utils.display_benchmark(data, main_asset, benchmark_asset, periods_per_year, rfr)
+    elif menu == 'rolling':
+        return utils.display_rolling(data, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year)
+
 
