@@ -71,7 +71,7 @@ def json_to_df(data):
         Transforms data from JSON to PDF.
         Modify this function to accomodate for different data sources that have a slightly different data frame shape --> (No date index, date column not named 'Date', etc.)
         '''
-        data = pd.DataFrame(data).dropna()
+        data = pd.DataFrame(data)
         try:
             data.set_index('Date', inplace=True)
         except:
@@ -396,7 +396,9 @@ def retrieve_all_summary_texts(prices, rfr=rfr, periods_per_year=periods_per_yea
     all_texts = [retrieve_summary_text(prices, lookback, rfr, periods_per_year) for lookback in lookback_periods]
 
     display = dbc.Row([
-
+                        html.H5(children="Too Long; Didn't Analyze", className=style.h5_style)
+                    ] +
+                [
                 dbc.Col(i, 
                         className=style.dbc_col_style + ' border-warning p-2 m-1',
                         xs=12, sm=12, md=12, lg=2, xl=2) for i in all_texts

@@ -196,10 +196,12 @@ def display_params(n_clicks):
             Output('end-date','disabled'),
             Output('date-validation-p', 'children'),
             [Input('stored-data','data'),
-            Input('lookback-dpdn', 'value')
+            Input('lookback-dpdn', 'value'),
+            Input('assets-dpdn','value')
             ])
-def update_date_picker(data, lookback):
+def update_date_picker(data, lookback, assets):
     data = utils.json_to_df(data)
+    data = data[assets].dropna()
     min_date = data.index[0]
     max_date = data.index[-1]
     start_date, end_date = utils.retrieve_date_from_lookback(data, lookback)
