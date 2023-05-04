@@ -1,12 +1,18 @@
 import dash_bootstrap_components as dbc
 from dash import html, dcc, Input, Output, State, callback
 import dash
+import plotly.graph_objs as go
 import pandas as pd
 from datetime import timedelta
+import datetime
 import scripts.style as style
-import scripts.tickerUniverse as tickUn
 import scripts.utils as utils
+import scripts.metricsTable as metricsTable
+import scripts.returnsModule as returnsModule
+import scripts.benchmarkModule as benchmarkModule
+import scripts.rollingModule as rollingModule
 import yfinance as yf
+import quantstats as qs
 import sys
 
 path = sys.path[0]
@@ -23,83 +29,8 @@ header = dbc.Row([
         ], className=style.dbc_row_style)
 
 upload_file = dbc.Row([
-                    dbc.Col([
-                        dbc.Row([
-                            # Upload field
-                            dbc.Col(
-                                id='upload-data-col',
-                                children=[
-                                    dcc.Upload(
-                                        id='upload-data',
-                                        children=html.Div(['Drag and Drop or ',
-                                                            html.A('Select Files'), 
-                                                            ]),
-                                        style={
-                                            'width': '100%',
-                                            'height': '60px',
-                                            'lineHeight': '60px',
-                                            'borderWidth': '1px',
-                                            'borderStyle': 'dashed',
-                                            'borderRadius': '5px',
-                                            'textAlign': 'center',
-                                            'margin': '10px',
-                                        },
-                                        # Allow multiple files to be uploaded
-                                        multiple=True),
-
-                                        dbc.Tooltip(
-                                            "Upload .csv file based on the data template. "
-                                            "Format is 'Date' as first column, followed by your choice of assets such as 'Asset1', 'Asset2', etc. ",
-                                            target="upload-data",
-                                            placement='left')
-
-                                ],xs=12, sm=12, md=12, lg=8, xl=8
-                            ),
-
-                            # Download data-sample button 
-                            dbc.Col([
-                                dbc.Button("Download CSV Template", id="btn_csv", className='mt-3', size='sm', color='primary', n_clicks=0),
-                                dcc.Download(id="download-dataframe-csv"),
-                            ],xs=12, sm=12, md=12, lg=2, xl=2),
-
-                            # Download data from yfinance modal
-                            dbc.Col([
-                                dbc.Button("Download Yahoo Data", id="open-modal-btn", className='mt-3', size='sm', color='primary', n_clicks=0),
-                                dbc.Modal(
-                                    [
-                                        dbc.ModalHeader(dbc.ModalTitle("Download asset prices from Yahoo Finance"), className='text-center'),
-                                        dbc.ModalBody(children=[
-                                                                html.P('Assets', className=style.params_p_style),
-                                                                dcc.Dropdown(id='yf-asset-dpdn', options=tickUn.ticker_labels, value='TSLA', multi=True, className='m-2'), 
-                                                                html.P('Date Period', className=style.params_p_style),
-                                                                dcc.Dropdown(id='yf-periods-dpdn', options=['5d','1mo','3mo','6mo','1y','2y','5y','10y','ytd','max'], value='2y', className='m-2'),
-                                                                ]),
-                                        dbc.ModalFooter(
-                                            html.Div([
-                                                dbc.Button('Download csv', id='yf-download-btn', className="border border-light", color="primary", n_clicks=0),
-                                                dcc.Download(id="yf-download-csv"),
-                                                dbc.Button("Close", id="close-modal-btn", className="ms-2 border border-light", color="dark", n_clicks=0)
-                                            ])
-                                        ),
-                                    ],
-                                    id="modal",
-                                    is_open=False,
-                                    )
-                            ],xs=12, sm=12, md=12, lg=2, xl=2)
-
-                        ]),
-
-                        # Data table
-                        dbc.Row([
-                            dbc.Spinner(
-                            children=[html.Div(id='output-datatable', className='mt-3')], 
-                            size="lg", 
-                            color="primary", 
-                            type="border", 
-                            fullscreen=False),
-                        ])
-
-                    ],xs=12, sm=12, md=12, lg=6, xl=6, className='p-5'),
+    
+                    utils.upload_data(), 
 
                     # Parameters spinner + div
                     dbc.Col([
@@ -125,6 +56,393 @@ layout = dbc.Container([
                                 type="border", 
                                 fullscreen=False),
 ], fluid=True)
+
+def create_params(initial_amount=utils.initial_amount, rfr=utils.rfr, periods_per_year=utils.periods_per_year, rolling_periods=utils.rolling_periods):
+
+    date = datetime.date.today() # Used in dates params for date picker
+
+    display = html.Div([
+
+                        html.H5('Adjust Parameters', className=style.h5_style),
+
+                        dbc.Row([
+
+                                dbc.Row([
+                                    
+                                    dbc.Col([
+
+                                        html.P(children='Filter for Asset', className=style.params_p_style),
+
+                                        dcc.Dropdown(id='assets-dpdn',
+                                                        multi=True,
+                                                        )
+                                            ], className='mb-3')
+                                    ]),
+
+                                dbc.Col([
+                                    html.P(children='Initial amount', className=style.params_p_style),
+
+                                    dcc.Input(id='initial-amount',
+                                            type='number',
+                                            placeholder='1,000',
+                                            value=initial_amount,
+                                            min=1,
+                                            ),
+
+                                    html.P(children='Risk-free rate', className=style.params_p_style),
+
+                                    dcc.Input(id='rfr',
+                                            type='number',
+                                            placeholder='Risk-free rate',
+                                            value=rfr,
+                                            step=0.01,
+                                            ),
+
+                                    html.P(children='Periods per year', className=style.params_p_style),
+
+                                    dcc.Input(id='periods-per-year',
+                                            type='number',
+                                            placeholder='Periods per year',
+                                            value=periods_per_year,
+                                            step=1,
+                                            min=1,
+                                            ),
+
+                                    # Tooltip for periods per year param
+                                    dbc.Tooltip(
+                                        "Assumes you're using daily price series. "
+                                        "Change to 12 for monthly data or adjust accordingly. "
+                                        ,
+                                        target="periods-per-year",
+                                        ),
+
+                                    html.P(children='Rolling periods', className=style.params_p_style),
+
+                                    dcc.Input(id='rolling-periods',
+                                            type='number',
+                                            placeholder='Rolling periods',
+                                            value=rolling_periods,
+                                            step=1,
+                                            min=1,
+                                            )
+                                ], xs=12, sm=12, md=12, lg=12, xl=4),
+
+                                dbc.Col([
+
+                                    dbc.Row([
+
+                                        dbc.Col([
+
+                                            html.P(children='Start Date', className=style.params_p_style),
+
+                                            dcc.DatePickerSingle(
+                                                        id='start-date',
+                                                        max_date_allowed=date,
+                                                        initial_visible_month=date,
+                                                        date=date,
+                                                    ),
+                                                ],xs=12, sm=12, md=12, lg=6, xl=6),
+                                            
+                                            dbc.Tooltip(
+                                                "To change manually, please pick 'max' as your lookback first. ",
+                                                target="start-date",
+                                                placement='top',
+                                                ),
+                                            
+                                        dbc.Col([
+
+                                            html.P(children='End Date', className=style.params_p_style),
+
+                                            dcc.DatePickerSingle(
+                                                        id='end-date',
+                                                        max_date_allowed=date,
+                                                        initial_visible_month=date,
+                                                        date=date
+                                                    ),
+                                                ],xs=12, sm=12, md=12, lg=6, xl=6)
+                                        ]),
+
+                                    dbc.Row([
+
+                                        dbc.Col([
+
+                                                html.P(children='Main', className=style.params_p_style),
+
+                                                dcc.Dropdown(id='main-asset',
+                                                        value = '',
+                                                        ),
+                                                ],xs=12, sm=12, md=12, lg=6, xl=6),
+
+                                        dbc.Col([
+
+                                                html.P(children='Benchmark', className=style.params_p_style),
+
+                                                dcc.Dropdown(id='benchmark-asset',
+                                                        value = '',
+                                                        ),
+                                                ],xs=12, sm=12, md=12, lg=6, xl=6),
+                                        ]),
+
+                                        dbc.Row([
+
+                                            dbc.Col([
+
+                                                html.P(children='Lookback Period', className=style.params_p_style ),
+
+                                                dcc.Dropdown(id='lookback-dpdn',
+                                                            options=[{'label':i, 'value':i} for i in utils.lookback_periods],
+                                                            value='max'),
+
+                                                html.P(id='date-validation-p', className='text-danger mt-2')
+
+                                            ],xs=12, sm=12, md=12, lg=6, xl=6)
+                                        ])
+
+                            ],xs=12, sm=12, md=12, lg=12, xl=8),
+
+                            dbc.Row([
+
+                                dbc.Col([
+
+                                    dbc.Button(id='apply-changes-btn',
+                                        children='Apply Changes',
+                                        n_clicks=0,
+                                        className='mt-3 mb-3 border border-light',
+                                        color='primary'),
+
+                                ],xs=12, sm=12, md=12, lg=12, xl=6)
+                            ]),
+
+                        ]),
+                ])
+
+    return display
+
+def display_tabs():
+    display = dbc.Row([
+        
+                    dcc.Tabs(id='menu-tabs',
+                            value='compare',
+                            children=[
+                                dcc.Tab(label='TL;DA', value='tlda', style=style.tab_style, selected_style=style.tab_selected_style),
+                                dcc.Tab(label='Compare', value='compare', style=style.tab_style, selected_style=style.tab_selected_style),
+                                dcc.Tab(label='Returns', value='returns', style=style.tab_style, selected_style=style.tab_selected_style),
+                                dcc.Tab(id='benchmark-tab', label='Benchmark', value='benchmark', style=style.tab_style, selected_style=style.tab_selected_style),
+                                dcc.Tab(id='rolling-tab', label='Rolling', value='rolling', style=style.tab_style, selected_style=style.tab_selected_style),
+
+                        ]), dbc.Tooltip(
+                            "Adjust main and benchmark params to your liking. ",
+                            target="benchmark-tab",
+                            placement='bottom'
+                            ),
+
+                    dbc.Tooltip(
+                            "Adjust rolling periods param to the appropriate timeframe. ",
+                            target="rolling-tab",
+                            placement='bottom'
+                            ),
+                    ])
+    return display
+
+def retrieve_summary_text(prices, lookback, rfr=utils.rfr, periods_per_year=utils.periods_per_year):
+    '''
+    Retrieves summary text containing a brief summary of top / worst performances for a given lookback period.
+    '''
+    try:
+        start_date, end_date = utils.retrieve_date_from_lookback(prices, lookback)
+        prices = prices.loc[start_date:end_date]
+        returns = qs.utils._prepare_returns(prices)
+
+        start_date = str(prices.index[0])[:10]
+        end_date = str(prices.index[-1])[:10]
+        comp = qs.stats.comp(returns)
+        max_return = round(comp.max() * 100 , 2)
+        min_return = round(comp.min() * 100 , 2)
+
+        sharpe_ratio = round(qs.stats.sharpe(returns, rf=rfr, periods=periods_per_year, annualize=True),2)
+        volatility = round(qs.stats.volatility(returns, periods=periods_per_year, annualize=True)*100, 2)
+
+        display = html.Div(
+                            children=
+                                    dcc.Markdown(
+                                        f'''
+                                        ###### Best {comp.idxmax()} {volatility.idxmin()} {sharpe_ratio.idxmax()}
+
+                                        **{lookback.upper()}** period - {start_date} to {end_date}:
+
+                                        * **Performance**: 
+                                        {comp.idxmax()} best at {max_return}%. 
+                                        {comp.idxmin()} worst at {min_return}%.
+
+                                        * **Volatility**: 
+                                        {volatility.idxmin()} best at {volatility.min()}%.
+                                        {volatility.idxmax()} worst at {volatility.max()}%.
+
+                                        * **Risk-adjusted Performance (Sharpe)**: 
+                                        {sharpe_ratio.idxmax()} best at {sharpe_ratio.max()}.
+                                        {sharpe_ratio.idxmin()} worst at {sharpe_ratio.min()}.
+                                        '''
+                                    )
+                            )
+    except:
+        display = html.Div(children=
+                                    dcc.Markdown(
+                                        f'''
+                                        Couldn't retrieve summary for **{lookback.upper()}** period.
+                                        '''
+                                    )
+                                )
+    return display
+
+def retrieve_all_summary_texts(prices, rfr=utils.rfr, periods_per_year=utils.periods_per_year):
+    '''
+    Retrieves all summary texts for a list of lookbacks.
+    '''
+    all_texts = [retrieve_summary_text(prices, lookback, rfr, periods_per_year) for lookback in utils.lookback_periods]
+
+    display = dbc.Row([
+                        html.H5(children="Too Long; Didn't Analyze", className=style.h5_style)
+                    ] +
+                [
+                dbc.Col(i, 
+                        className=style.dbc_col_style + ' border-warning p-2 m-1',
+                        xs=12, sm=12, md=12, lg=2, xl=2) for i in all_texts
+
+                ], className=style.dbc_row_style)
+    return display
+
+def display_compare(prices, initial_amount=utils.initial_amount, rfr=utils.rfr, periods_per_year=utils.periods_per_year):
+    '''
+    Creates the display of compare module that includes index performance, drawdown, and metrics table.
+    '''
+    # Setup data
+    assets = prices.columns.to_list()
+    returns = qs.utils._prepare_returns(prices)
+    # Create index evolution
+    index = qs.utils.to_prices(returns, initial_amount)
+    drawdown = qs.stats.to_drawdown_series(returns)
+
+    # Index evolution
+    index_traces = [go.Scatter(x=index.index, y=index[a], mode='lines', name=a) for a in assets]
+    index_layout = style.scatter_charts_layout(title=f'Performance of {style.accounting_format(initial_amount)}')
+    index_fig = go.Figure(index_traces, index_layout)
+    index_fig = style.add_range_slider(index_fig)
+
+    # Drawdown
+    drawdown_traces = [go.Scatter(x=drawdown.index, y=drawdown[a], mode='lines', name=a) for a in assets]
+    drawdown_layout = style.scatter_charts_layout(title='Drawdown', ytickformat=',.1%')
+    drawdown_fig = go.Figure(drawdown_traces, drawdown_layout)
+    drawdown_fig = style.add_range_slider(drawdown_fig)
+
+    display = dbc.Row([
+
+                    dbc.Col([
+                        html.H5(f'Metrics', className=style.h5_style),
+                        html.Div([metricsTable.create_metrics_table(prices, periods_per_year, rfr)], className='mb-4')
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
+
+                    dbc.Col([
+                        dcc.Graph(figure=index_fig)
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
+
+                    dbc.Col([
+                        dcc.Graph(figure=drawdown_fig)
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
+
+    ], className=style.dbc_row_style)
+
+    return display
+
+def display_returns(prices, main_asset, round_to=2):
+    '''
+    Creates the display of returns module that includes monthly, eoy, and time series of returns.
+    '''
+    display = dbc.Row([
+
+                    dbc.Col([
+                        html.H5(f'Monthly Returns - {main_asset}', className=style.h5_style),
+                        html.Div([returnsModule.create_monthly_returns_table(prices, main_asset, round_to)],className='mb-4')
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
+
+                    dbc.Col([
+                        dcc.Graph(figure=returnsModule.create_eoyReturns_bar(prices))
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
+
+                    dbc.Col([
+                        dcc.Graph(figure=returnsModule.create_daily_returns_plot(prices, main_asset))
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
+
+                    dbc.Col([
+                        dcc.Graph(figure=returnsModule.create_returns_box_plot(prices))
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style)
+
+            ], className=style.dbc_row_style)
+
+    return display
+
+def display_benchmark(prices, main_asset, benchmark_asset, periods_per_year=utils.periods_per_year, rfr=utils.rfr):
+    '''
+    Creates the display of benchmark module that includes statistics table, scatter plot, correlation heatmap, and returns dist plot.
+    '''
+    display = dbc.Row([
+
+                dbc.Col([
+
+                    html.H5(f'Statistics - {main_asset} vs {benchmark_asset}', className=style.h5_style),
+
+                    benchmarkModule.create_statistics_table(prices, main_asset, benchmark_asset, periods_per_year, rfr)
+                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
+
+                dbc.Col([
+                    dcc.Graph(figure=benchmarkModule.create_scatter_plot(prices, main_asset, benchmark_asset))
+                ], xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
+
+                dbc.Col([
+                    dcc.Graph(figure=benchmarkModule.create_distribution_plot(prices, main_asset, benchmark_asset))
+                ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
+
+                dbc.Col([
+                    dcc.Graph(figure=benchmarkModule.create_correlation_heatmap(prices))
+                ], xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style)
+
+            ], className=style.dbc_row_style)
+
+    return display
+
+def display_rolling(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year):
+    '''
+    Creates the display of the rolling charts module.
+    '''
+    display = dbc.Row([
+
+                    dbc.Col([
+                        dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Alpha"))
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
+
+                    dbc.Col([
+                        dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Beta"))
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
+
+                    dbc.Col([
+                        dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Sharpe"))
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
+
+                    dbc.Col([
+                        dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Sortino"))
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
+
+                    dbc.Col([
+                        dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Volatility"))
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style),
+
+                    dbc.Col([
+                        dcc.Graph(figure=rollingModule.create_rolling_metrics(prices, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year, "Correlation"))
+                    ],xs=12, sm=12, md=12, lg=6, xl=6, className=style.dbc_col_style)
+                    
+        ], className=style.dbc_row_style)
+
+    return display
+
 
 #-------------------Callbacks-------------------
 # Download data sample
@@ -182,8 +500,8 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
             [Input('submit-btn','n_clicks')])
 def display_params(n_clicks):
     if n_clicks >= 1:
-        params =  utils.create_params()
-        return params, 'success', utils.display_tabs()
+        params =  create_params()
+        return params, 'success', display_tabs()
 
 # Update date picker to relevant dates
 @callback(Output('start-date','date'),
@@ -265,25 +583,20 @@ def update_main_bench_dropdowns(filtered_assets):
             ])
 def display_body(n_clicks, data, menu, assets, start_date, end_date, initial_amount, rfr, periods_per_year, rolling_periods, main_asset, benchmark_asset):
     data = utils.json_to_df(data)
+    data = data.dropna()
+
     if n_clicks >= 1:
-        try:
-            data = data.loc[start_date:end_date] # Filter for start and end dates from date picker.
-        except:
-            print(f"Couldn't filter for date.")
-        try:
-            data = data[assets] # Filter for selected assets from dropdown.
-        except:
-            print(f"Couldn't filter for assets.")
+        filtered_data = utils.filter_data(data, start_date, end_date, assets)
 
     if menu == 'tlda':
-        return utils.retrieve_all_summary_texts(data, rfr, periods_per_year)
+        return retrieve_all_summary_texts(data, rfr, periods_per_year)
     elif menu == 'compare':
-        return utils.display_compare(data, initial_amount, rfr, periods_per_year)
+        return display_compare(filtered_data, initial_amount, rfr, periods_per_year)
     elif menu == 'returns':
-        return utils.display_returns(data, main_asset)
+        return display_returns(filtered_data, main_asset)
     elif menu == 'benchmark':
-        return utils.display_benchmark(data, main_asset, benchmark_asset, periods_per_year, rfr)
+        return display_benchmark(filtered_data, main_asset, benchmark_asset, periods_per_year, rfr)
     elif menu == 'rolling':
-        return utils.display_rolling(data, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year)
+        return display_rolling(filtered_data, main_asset, benchmark_asset, rolling_periods, rfr, periods_per_year)
 
 
