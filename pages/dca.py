@@ -23,7 +23,7 @@ header = dbc.Row([
                             Dollar cost averaging is the process of buying an asset **recurrently** at specific time intervals.
                             The idea is to smooth volatility by averaging up or down consistently, taking emotions out of the equation.
 
-                            You can test DCA strategy below vs investing all your money at once at the beginning.
+                            You can test DCA strategy below vs investing all your money at once.
 
                             **Note** that if you load multiple assets, DCA will be applied to and assessed relative to the equally weighted portfolio index.
                             ''', className='text-center')
@@ -64,9 +64,9 @@ def create_dca_params(budget, initial_amount):
                                             min=1,
                                             ),
 
-                                    html.P(children='Initial amount', className=style.params_p_style),
+                                    html.P(children='Initial Investment', className=style.params_p_style),
 
-                                    dcc.Input(id='dca-initial-amount',
+                                    dcc.Input(id='dca-initial-investment',
                                             type='number',
                                             placeholder='1,000',
                                             value=initial_amount,
@@ -246,9 +246,8 @@ def create_dca_body(prices, budget, starting_amount, days):
     
     # Index Plot
     traces = [go.Scatter(x=concat.index, y=concat[i], mode='lines', name=i) for i in concat.columns]
-    layout = style.scatter_charts_layout(title=f'Investing {style.accounting_format(budget)} at T0 vs DCAing every {days} days')
+    layout = style.scatter_charts_layout(title=f'Investing {style.accounting_format(budget)} - Lump Sum vs DCA')
     figure = go.Figure(traces, layout)
-
 
     # Cashflow table 
     data = cashflow.reset_index().to_dict('records')
@@ -269,12 +268,41 @@ def create_dca_body(prices, budget, starting_amount, days):
                                 'width': '30px',
                                 'padding':'5px'})
 
+    # Create summary text
+    startDate = concat.index[0].strftime("%m/%d/%Y")
+    endDate = concat.index[-1].strftime("%m/%d/%Y")
+
+    summary_text = dcc.Markdown(f"""
+                                Start Date: {startDate}
+
+                                End Date: {endDate}
+
+                                Budget: {style.accounting_format(budget)}
+
+                                Initial Investment: {style.accounting_format(starting_amount)}
+
+                                Re-invest every: {days} days
+
+                                DCA final amount: {style.accounting_format(concat.iloc[-1]['DCA'])}
+
+                                DCA return: {round((concat.iloc[-1]['DCA'] / budget - 1)*100,2)}%
+
+                                Base Case final amount: {style.accounting_format(concat.iloc[-1][name_base_case + ' base'])}
+
+                                Base Case return: {round((concat.iloc[-1][name_base_case + ' base'] / budget - 1)*100,2)}%
+
+                                """)
 
     display = dbc.Row([
 
                     dbc.Col([
                         dcc.Graph(figure=figure),
-                    ],xs=12, sm=12, md=12, lg=12, xl=12, className=style.dbc_col_style),
+                    ],xs=12, sm=12, md=12, lg=10, xl=10),
+                    
+                    dbc.Col([
+                        html.Div(children=summary_text)
+                    ],xs=12, sm=12, md=12, lg=2, xl=2, className='mt-2 text-center'),
+
 
                     dbc.Col([
                         dbc.Button(
@@ -290,7 +318,8 @@ def create_dca_body(prices, budget, starting_amount, days):
                             is_open=False,
                         )
                     ],xs=12, sm=12, md=12, lg=12, xl=12),
-                ])
+
+                ], className=style.dbc_row_style)
 
     return display
 
@@ -307,10 +336,10 @@ layout = dbc.Container([
                 html.Div(id='dca-params')
         ],xs=12, sm=12, md=12, lg=6, xl=6),
 
-        html.Div([
-        ], id='dca-body')
-
     ], className=style.dbc_row_style),
+
+    html.Div([
+    ], id='dca-body')
     
 ],fluid=True)
 
@@ -321,8 +350,8 @@ def display_params(n):
         return create_dca_params(200000,20000)
 
 @callback(Output('dca-input-validation', 'children'),
-        Output('dca-initial-amount', 'value'),
-        [Input('dca-initial-amount','value'),
+        Output('dca-initial-investment', 'value'),
+        [Input('dca-initial-investment','value'),
         Input('dca-budget','value')
         ])
 def validate_input(initial_amount, budget):
@@ -336,7 +365,7 @@ def validate_input(initial_amount, budget):
             State('start-date','date'),
             State('end-date','date'),
             State('dca-budget','value'),
-            State('dca-initial-amount','value'),
+            State('dca-initial-investment','value'),
             State('dca-interval','value'),
             ])
 def display_body(n, data, assets, start_date, end_date, budget, initial_amount, dca_interval,):

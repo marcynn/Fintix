@@ -37,4 +37,6 @@ n = tickers.shape[0]
 for i in range(n):
     tickers_dict[tickers.loc[i]["Ticker"]] = tickers.loc[i]["Ticker + Name"]
 
+tickers_to_add = {'BTC-USD':'Bitcoin'}
 ticker_labels = [{'label':tickers_dict[i], 'value':i} for i in list(tickers_dict.keys())]
+ticker_labels += [{'label': i + ' - ' + tickers_to_add[i], 'value':i} for i in list(tickers_to_add.keys())]
