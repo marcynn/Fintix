@@ -39,13 +39,14 @@ tab_selected_style = {
 def create_table_data_style(padding='10px'):
     style={'whiteSpace': 'normal',
             'backgroundColor': secondary_theme_color,
+            'border':'1px solid #404040',
             'color':'white', 
             'padding':padding}
     return style
 style_data = create_table_data_style()
 
 style_header={
-    'border': f'1px solid',
+    'border': f'1px solid #404040',
     'fontWeight':'bold',
     'textAlign': 'center',
     'padding':'10px',
@@ -106,7 +107,7 @@ def scatter_charts_layout(title=None, xtickformat=None, ytickformat=None, xaxisT
                         hoverlabel=dict(font_size=15),
                         xaxis=dict(showspikes=False, tickformat=xtickformat, title=xaxisTitle),
                         yaxis=dict(ticks='outside', showspikes=False, tickformat=ytickformat, title=yaxisTitle),
-                        #legend=dict(orientation='h'),
+                        legend=dict(orientation='h'),
                         template=chart_templates,
                         paper_bgcolor=secondary_theme_color,
                         plot_bgcolor=secondary_theme_color,
