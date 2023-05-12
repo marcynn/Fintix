@@ -590,10 +590,10 @@ def update_main_bench_dropdowns(filtered_assets):
             ])
 def display_body(n_clicks, data, menu, assets, start_date, end_date, initial_amount, rfr, periods_per_year, rolling_periods, main_asset, benchmark_asset):
     data = utils.json_to_df(data)
-    data = data.dropna()
-
+    
     if n_clicks >= 1:
         filtered_data = utils.filter_data(data, start_date, end_date, assets)
+        filtered_data = filtered_data.dropna()
 
     if menu == 'tlda':
         return retrieve_all_summary_texts(data, rfr, periods_per_year)
