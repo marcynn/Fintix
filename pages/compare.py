@@ -301,21 +301,66 @@ def retrieve_summary_text(prices, lookback, rfr=utils.rfr, periods_per_year=util
                                 )
     return display
 
+def retrieve_summary_score(prices, lookback, rfr=utils.rfr, periods_per_year=utils.periods_per_year):
+    '''
+    Scores assets based on metrics for different lookbacks.
+    '''
+    try:
+        start_date, end_date = utils.retrieve_date_from_lookback(prices, lookback)
+        prices = prices.loc[start_date:end_date]
+        returns = qs.utils._prepare_returns(prices)
+
+        start_date = str(prices.index[0])[:10]
+        end_date = str(prices.index[-1])[:10]
+        comp = qs.stats.comp(returns)
+        sharpe_ratio = round(qs.stats.sharpe(returns, rf=rfr, periods=periods_per_year, annualize=True),2)
+        volatility = round(qs.stats.volatility(returns, periods=periods_per_year, annualize=True)*100, 2)
+
+        summary_dict = {
+                        'Performance': [comp.idxmax()], 
+                        'Volatility': [volatility.idxmin()],
+                        'Sharpe': [sharpe_ratio.idxmax()]
+            }
+        summary_dict = pd.DataFrame(summary_dict, columns=list(summary_dict.keys()))
+        return summary_dict
+    except:
+        pass
+
 def retrieve_all_summary_texts(prices, rfr=utils.rfr, periods_per_year=utils.periods_per_year):
     '''
     Retrieves all summary texts for a list of lookbacks.
     '''
     all_texts = [retrieve_summary_text(prices, lookback, rfr, periods_per_year) for lookback in utils.lookback_periods]
+    summary_scores = [retrieve_summary_score(prices, lookback, rfr, periods_per_year) for lookback in utils.lookback_periods]
+
+    # Clean summary scores
+    summary_scores = pd.concat(summary_scores)
+
+    traces = [go.Bar(x=summary_scores[i].value_counts().index, 
+                        y=summary_scores[i].value_counts(), 
+                        name=i, 
+                        text = summary_scores[i].value_counts()) 
+                            for i in ['Performance','Volatility','Sharpe']]
+
+    layout = go.Layout(style.scatter_charts_layout(title=f"Summary Score", ))
+    figure = go.Figure(traces, layout)
+    figure.update_yaxes(showticklabels=False)
 
     display = dbc.Row([
-                        html.H5(children="Too Long; Didn't Analyze", className=style.h5_style)
+        
+                dbc.Row([
+                        html.H5(children="Too Long; Didn't Analyze", className=style.h5_style),
                     ] +
                 [
                 dbc.Col(i, 
                         className=style.dbc_col_style + ' border-warning p-2 m-1',
                         xs=12, sm=12, md=12, lg=2, xl=2) for i in all_texts
 
-                ], className=style.dbc_row_style)
+                ]),
+
+                dcc.Graph(figure=figure)
+
+                ],className=style.dbc_row_style)
     return display
 
 def display_compare(prices, initial_amount=utils.initial_amount, rfr=utils.rfr, periods_per_year=utils.periods_per_year):
@@ -596,7 +641,7 @@ def display_body(n_clicks, data, menu, assets, start_date, end_date, initial_amo
         filtered_data = filtered_data.dropna()
 
     if menu == 'tlda':
-        return retrieve_all_summary_texts(data, rfr, periods_per_year)
+        return retrieve_all_summary_texts(data[assets].dropna(), rfr, periods_per_year)
     elif menu == 'compare':
         return display_compare(filtered_data, initial_amount, rfr, periods_per_year)
     elif menu == 'returns':
